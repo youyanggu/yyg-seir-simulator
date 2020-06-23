@@ -2,6 +2,8 @@
 
 We present the underlying SEIR model simulator behind the YYG / [covid19-projections.com](https://covid19-projections.com) model, as well a summarized set of parameters that helped generate the projections. If you are familiar with Python, you can generate your own simulations in under 5 minutes.
 
+![SEIR Model Diagram](https://upload.wikimedia.org/wikipedia/commons/3/3d/SEIR.PNG)
+
 ## Table of Contents
 * [Introduction](#introduction)
 * [Dependencies](#dependencies)
@@ -17,15 +19,17 @@ We present the underlying SEIR model simulator behind the YYG / [covid19-project
 
 ## Introduction
 
-To begin, we want to be clear that this is **not** the full model used by [covid19-projections.com](https://covid19-projections.com). This is the underlying SEIR model without the machine learning layer to learn the parameters. In fact, this simulator does not use any real data - it only simulates infections, hospitalizations, and deaths given a single set of parameters.
+To begin, we want to be clear that this is **not** the full model used by [covid19-projections.com](https://covid19-projections.com). This is the underlying SEIR model without the machine learning layer to learn the parameters. In fact, **this simulator does not use any published data**: it only simulates infections, hospitalizations, and deaths given a single set of parameters. As a result, **this tool is meant to generate simulations, not projections**.
 
-Because this simulator does not use real data and has very little [dependencies](#dependencies), it is very easy to run and works right out of the box. We've purposedly designed our simulator to be as lean and simple as possible.
+Learn more about how our SEIR model works on [our website](https://covid19-projections.com/model-details/).
+
+Because this simulator has very little [dependencies](#dependencies) and does not rely on published data, it is very easy to run, works right out of the box, and is easily modifiable. We've purposedly designed our simulator to be as lean and simple as possible.
 
 The simulations produced by this program will not necessarily match the full model, but it is often be a close approximation. The full model for *covid19-projections.com* generates thousands of parameter sets for each region and weighs the parameters based on how the resulting simulations match the observed data. With that said, this is the full, unabridged SEIR model used to generate the simulations - no modifications have been made for this release.
 
 In addition to the SEIR simulator, we provide the "best" set of parameters that our machine learning layer has learned to best fit the real-world observed data. This is done by taking a weighted mean (or median) of the individual parameters used in our full model. Because parameters are not independent, using only a single set of parameters may skew the simulation results when compared to the full model projections.
 
-While this simulator may not be best suited to make projections (since it does not use real data), we believe this simulator is particular helpful for mapping out relative scenarios. For example, how much can we reduce infections/deaths if [people started social distancing 7 days earlier](#decrease-inflection-date-by-7-days). Or what if [20% of individuals self-quarantine after symptom onset](#simulate-effect-of-quarantine). Or if there was [no reopening](#assume-no-reopening).
+While this simulator may not be best suited to make projections (since it is not tuned on any published data), we believe this simulator is particular helpful for mapping out relative scenarios. For example, how much can we reduce infections/deaths if [people started social distancing 7 days earlier](#decrease-inflection-date-by-7-days). Or what if [20% of individuals self-quarantine after symptom onset](#simulate-effect-of-quarantine). Or if there was [no reopening](#assume-no-reopening).
 
 ## Dependencies
 
@@ -103,6 +107,8 @@ python run_simulation.py -v --best_params_dir best_params/latest --country US --
 
 #### Simulate effect of quarantine
 In this scenario, we show how the course of the epidemic would be different if just 20% of infected individuals immediately self-quarantine after showing symptoms, reducing their own transmission by 25%. For the remaining 80% of infected individuals, we assume normal transmission. You can see a graph of this scenario [here](https://covid19-projections.com/us-self-quarantine).
+
+This can also be used as a proxy to simulate the effect of mask-wearing: if 20% of individuals wear masks, thereby reducing the overall transmission rate by 25%.
 ```
 python run_simulation.py -v --best_params_dir best_params/latest --country US --quarantine_perc 0.2 --quarantine_effectiveness 0.25
 ```
