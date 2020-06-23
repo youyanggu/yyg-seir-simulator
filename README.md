@@ -79,12 +79,13 @@ python run_simulation.py -v --best_params_dir best_params/latest --country US --
 ```
 python run_simulation.py -v --best_params_dir best_params/latest --country Brazil
 python run_simulation.py -v --best_params_dir best_params/latest --country Sweden
-python run_simulation.py -v --best_params_dir best_params/latest --country Iran
+python run_simulation.py -v --best_params_dir best_params/latest --country "United Kingdom"
 ```
 
 #### Canadian province simulation:
 ```
 python run_simulation.py -v --best_params_dir best_params/latest --country Canada --subregion Quebec
+python run_simulation.py -v --best_params_dir best_params/latest --country Canada --subregion Ontario
 python run_simulation.py -v --best_params_dir best_params/latest --country Canada --subregion "British Columbia"
 ```
 
