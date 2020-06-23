@@ -23,7 +23,7 @@ To begin, we want to be clear that this is **not** the full model used by [covid
 
 Unlike traditional SEIR models, our simulator does not use differential equations - we use a simple state machine. Learn more about how our SEIR model works on [our website](https://covid19-projections.com/model-details/).
 
-Because this simulator has very little [dependencies](#dependencies) and does not rely on published data, it is very fast to run, works right out of the box, and is easily modifiable. We've purposedly designed our simulator to be as lean and simple as possible.
+Because this simulator has very little [dependencies](#dependencies) and does not rely on published data, it is fast to run, works right out of the box, and is easily modifiable. We've purposefully designed our simulator to be as lean and simple as possible.
 
 The simulations produced by this program will not necessarily match the full model, but it is often be a close approximation. The full model for *covid19-projections.com* generates thousands of parameter sets for each region and weighs the parameters based on how the resulting simulations match the observed data. With that said, this is the full, unabridged SEIR model used to generate the simulations - no modifications have been made for this release.
 
@@ -40,7 +40,7 @@ You need [Python 3](https://www.python.org/downloads/) and [NumPy](https://numpy
 ## Setup
 
 1. Make sure you have [Python 3](https://www.python.org/downloads/) and [NumPy](https://numpy.org/install/) installed.
-2. Clone our repository: ```git clone https://github.com/youyanggu/yyg-c19pro-model-public.git```
+2. Clone our repository: ```git clone https://github.com/youyanggu/yyg-seir-simulator.git```
 3. You are now ready to run our simulator! See sample usage below.
 
 ## Usage
