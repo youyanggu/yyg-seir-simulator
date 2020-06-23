@@ -25,15 +25,30 @@ DATE_STR_FMT = '%Y-%m-%d'
 ADDL_US_HOLIDAYS = [datetime.date(2020,4,12), datetime.date(2020,5,10), datetime.date(2020,10,31)] # Eastern, Mother's Day, Halloween
 FALL_START_DATE_NORTH = datetime.date(2020,9,22)
 
+#################
 # Countries
+#################
 EU_COUNTRIES = ['Austria', 'Belgium', 'Bulgaria', 'Croatia', 'Cyprus', 'Czechia', 'Denmark',
     'Estonia', 'Finland', 'France', 'Germany', 'Greece', 'Hungary',
     'Ireland', 'Italy', 'Latvia', 'Lithuania', 'Luxembourg', 'Malta', 'Netherlands',
     'Poland', 'Portugal', 'Romania', 'Slovakia', 'Slovenia', 'Spain', 'Sweden'
 ]
+LATIN_AMERICA_COUNTRIES = [
+    'Argentina', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Cuba', 'Dominican Republic',
+    'Ecuador', 'Honduras', 'Mexico', 'Panama', 'Peru',
+]
+AFRICAN_COUNTRIES = ['Algeria', 'Egypt', 'Morocco', 'Nigeria', 'South Africa']
+ASIAN_COUNTRIES = ['Bangladesh', 'China', 'Iran', 'Israel', 'Japan', 'Indonesia', 'India', 'Kuwait',
+    'Malaysia', 'Pakistan', 'Philippines', 'Russia', 'Saudi Arabia', 'South Korea', 'Turkey',
+    'United Arab Emirates']
 EUROPEAN_COUNTRIES = EU_COUNTRIES + [
     'United Kingdom', 'Switzerland', 'Norway',
     'Belarus', 'Iceland', 'Moldova', 'Serbia', 'Ukraine']
+OTHER_COUNTRIES = ['Australia', 'Canada']
+
+ADDL_COUNTRIES_SUPPORTED = EUROPEAN_COUNTRIES + LATIN_AMERICA_COUNTRIES + \
+    AFRICAN_COUNTRIES + ASIAN_COUNTRIES + OTHER_COUNTRIES
+ALL_COUNTRIES = ADDL_COUNTRIES_SUPPORTED + ['US']
 
 DASH_REGIONS = ['Miami-Dade']
 NON_SEASONAL_COUNTRIES = ['Indonesia', 'Philippines', 'India', 'Malaysia', 'Nigeria',
