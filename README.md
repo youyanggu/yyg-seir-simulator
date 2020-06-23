@@ -1,6 +1,6 @@
-# covid19-projections.com SEIR Simulator
+# YYG / covid19-projections.com SEIR Simulator
 
-We present the underlying SEIR model simulator behind [covid19-projections.com](https://covid19-projections.com), as well a summarized set of parameters that helped generate the projections. You can generate your own simulations in under 5 minutes.
+We present the underlying SEIR model simulator behind the YYG / [covid19-projections.com](https://covid19-projections.com) model, as well a summarized set of parameters that helped generate the projections. If you are familiar with Python, you can generate your own simulations in under 5 minutes.
 
 ## Table of Contents
 * [Introduction](#introduction)
@@ -25,7 +25,7 @@ The simulations produced by this program will not necessarily match the full mod
 
 In addition to the SEIR simulator, we provide the "best" set of parameters that our machine learning layer has learned to best fit the real-world observed data. This is done by taking a weighted mean (or median) of the individual parameters used in our full model. Because parameters are not independent, using only a single set of parameters may skew the simulation results when compared to the full model projections.
 
-While this simulator may not be best suited to make projections (since it does not use real data), we believe this simulator is particular helpful for mapping out scenarios. For example, what would happen if [people started social distancing 7 days earlier](#decrease-inflection-date-by-7-days). Or what if [20% of individuals self-quarantine after symptom onset](#simulate-effect-of-quarantine). Or if there was [no reopening](#assume-no-reopening).
+While this simulator may not be best suited to make projections (since it does not use real data), we believe this simulator is particular helpful for mapping out relative scenarios. For example, how much can we reduce infections/deaths if [people started social distancing 7 days earlier](#decrease-inflection-date-by-7-days). Or what if [20% of individuals self-quarantine after symptom onset](#simulate-effect-of-quarantine). Or if there was [no reopening](#assume-no-reopening).
 
 ## Dependencies
 
@@ -91,9 +91,14 @@ python run_simulation.py -v --best_params_dir best_params/latest --country Canad
 python run_simulation.py -v --best_params_dir best_params/latest --country US  --save_csv_fname us_simulation.csv
 ```
 
-#### Show hospitalizations
+#### Use a custom end date
 ```
-python run_simulation.py -v --best_params_dir best_params/latest --country US --compute_hospitalizations
+python run_simulation.py -v --best_params_dir best_params/latest --country US --simulation_end_date 2020-11-01
+```
+
+#### Use a custom start date
+```
+python run_simulation.py -v --best_params_dir best_params/latest --country US --simulation_start_date 2020-02-01
 ```
 
 #### Simulate effect of quarantine
@@ -105,7 +110,7 @@ python run_simulation.py -v --best_params_dir best_params/latest --country US --
 #### Use an older set of best parameters
 By default, we use the latest set of best parameters in `best_params/latest`, but you can also specify a different directory.
 ```
-python run_simulation.py -v --best_params_dir best_params/2020-06-20 --country US
+python run_simulation.py -v --best_params_dir best_params/2020-06-21 --country US
 ```
 
 #### Use the top 10 best parameters rather than the mean
