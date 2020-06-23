@@ -21,9 +21,9 @@ We present the underlying SEIR model simulator behind the YYG / [covid19-project
 
 To begin, we want to be clear that this is **not** the full model used by [covid19-projections.com](https://covid19-projections.com). This is the underlying SEIR model without the machine learning layer to learn the parameters. In fact, **this simulator does not use any published data**: it only simulates infections, hospitalizations, and deaths given a single set of parameters. As a result, **this tool is meant to generate simulations, not projections**.
 
-Learn more about how our SEIR model works on [our website](https://covid19-projections.com/model-details/).
+Unlike traditional SEIR models, our simulator does not use differential equations - we use a simple state machine. Learn more about how our SEIR model works on [our website](https://covid19-projections.com/model-details/).
 
-Because this simulator has very little [dependencies](#dependencies) and does not rely on published data, it is very easy to run, works right out of the box, and is easily modifiable. We've purposedly designed our simulator to be as lean and simple as possible.
+Because this simulator has very little [dependencies](#dependencies) and does not rely on published data, it is very fast to run, works right out of the box, and is easily modifiable. We've purposedly designed our simulator to be as lean and simple as possible.
 
 The simulations produced by this program will not necessarily match the full model, but it is often be a close approximation. The full model for *covid19-projections.com* generates thousands of parameter sets for each region and weighs the parameters based on how the resulting simulations match the observed data. With that said, this is the full, unabridged SEIR model used to generate the simulations - no modifications have been made for this release.
 
