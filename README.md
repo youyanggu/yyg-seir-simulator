@@ -154,6 +154,11 @@ python run_simulation.py -v --best_params_dir best_params/latest --country US --
 python run_simulation.py -v --best_params_dir best_params/latest --country US --set_param REOPEN_R_MULT 1
 ```
 
+#### Use a custom infection fatality rate (IFR)
+```
+python run_simulation.py -v --best_params_dir best_params/latest --country US --set_param MORTALITY_RATE 0.008
+```
+
 ### Changing parameters
 
 Sometimes you don't want to replace an existing parameter, but rather just change it. The `--change_param` flag takes a pair of values: the name of the parameter to be changed and the amount to change the value by. You can use the flag multiple times.
