@@ -23,7 +23,7 @@ If your system supports Python, you can generate your own simulations in under 5
 
 To begin, we want to be clear that this is **not** the full model used by [covid19-projections.com](https://covid19-projections.com). This is the underlying SEIR model without the machine learning layer to learn the parameters. In fact, **this simulator does not use any published data**: it only simulates infections, hospitalizations, and deaths given a single set of parameters. As a result, **this tool is meant to generate simulations, not projections**.
 
-Unlike traditional SEIR models, our simulator does not use differential equations - we use a simple state machine. Learn more about how our SEIR model works on [our website](https://covid19-projections.com/model-details/).
+Unlike traditional SEIR models, our simulator does not use differential equations - we use an abstracted state machine that tracks the probability transitions between the 4 states of SEIR: **S**usceptible-**E**xposed-**I**nfectious-**R**ecovered/deceased. Learn more about how our SEIR model works on [our website](https://covid19-projections.com/model-details/).
 
 Because this simulator has very little [dependencies](#dependencies) and does not rely on published data, it is fast to run, works right out of the box, and is easily modifiable. We've purposefully designed our simulator to be as lean and simple as possible.
 
