@@ -202,11 +202,11 @@ There are several parameters that we need to provide the simulator before it can
 
 #### `INITIAL_R_0`
 
-This is the initial basic reproduction number (R_0). Read more about our R_t estimates [here](https://covid19-projections.com/about/#effective-reproduction-number-r).
+This is the initial basic reproduction number (R_0). This value is usually between 0.8-6. Read more about our R_t estimates [here](https://covid19-projections.com/about/#effective-reproduction-number-r).
 
 #### `LOCKDOWN_R_0`
 
-This is the post-mitigation effective reproduction number (R_t).
+This is the post-mitigation effective reproduction number (R_t). This value is usually between 0.3-1.5.
 
 #### `INFLECTION_DAY`
 
@@ -214,19 +214,19 @@ This is the date of the inflection point when `INITIAL_R_0` transitions to `LOCK
 
 #### `RATE_OF_INFLECTION`
 
-This is the rate at which the `INITIAL_R_0` transitions to `LOCKDOWN_R_0`. A number closer to 1 indicates a faster transition (i.e. faster lockdown), while a number closer to 0 indicates a slower transition. For most region, this value is between 0.15 and 0.5. The more localized a region, the higher the rate of inflection. So for example, we estimate New York City has a `RATE_OF_INFLECTION` between 0.4-0.5, while the US as an entire country has a `RATE_OF_INFLECTION` of approximately 0.2-0.3.
+This is the rate at which the `INITIAL_R_0` transitions to `LOCKDOWN_R_0`. A number closer to 1 indicates a faster transition (i.e. faster lockdown), while a number closer to 0 indicates a slower transition. For most region, this value is between 0.15-0.5. The more localized a region, the higher the rate of inflection. So for example, we estimate New York City has a `RATE_OF_INFLECTION` between 0.4-0.5, while the US as an entire country has a `RATE_OF_INFLECTION` of approximately 0.2-0.3.
 
 #### `LOCKDOWN_FATIGUE`
 
-We incorporate a lockdown fatigue multiplier that is applied to the R_t. This is to simulate the increase in mobility after several weeks of lockdown, despite the order not being lifted. If this value is greater than 1, then it will contribute to an increase in infections in the weeks following the lockdown/mitigation. We do not use this for the majority of our projections.
+We incorporate a lockdown fatigue multiplier that is applied to the R_t. This is to simulate the increase in mobility after several weeks of lockdown, despite the order not being lifted. The default value is 1. If this value is greater than 1, then it will contribute to an increase in infections in the weeks following the lockdown/mitigation. We do not use this for the majority of our projections.
 
 #### `DAILY_IMPORTS`
 
-To begin our simulation, we must initialize / bootstrap our model with an initial number of infected individuals. Any epidemic in a region must begin with a number of imported individuals. This value gradually goes to 0 as community spread overtakes imported cases as the major source of spread.
+To begin our simulation, we must initialize / bootstrap our model with an initial number of infected individuals. Any epidemic in a region must begin with a number of imported individuals. This value gradually goes to 0 as community spread overtakes imported cases as the major source of spread. This value typically ranges from 10-1000.
 
 #### `MORTALITY_RATE`
 
-This is the initial estimate of the infection fatality rate (IFR). Read more about our IFR estimates [here](https://covid19-projections.com/about/#infection-fatality-rate-ifr).
+This is the initial estimate of the infection fatality rate (IFR). This value is usually between 0.005-0.0125. Read more about our IFR estimates [here](https://covid19-projections.com/about/#infection-fatality-rate-ifr).
 
 #### `REOPEN_DATE`
 
@@ -234,7 +234,7 @@ This is the date we estimate the region to reopen. Read more about our reopening
 
 #### `REOPEN_SHIFT_DAYS`
 
-Even though some regions open on the same date, infections can begin increasing faster or slower than we'd normally expect. We use the `REOPEN_SHIFT_DAYS` to account for that. For example, a value of 7 means that we are shifting the `REOPEN_DATE` to be 7 days later, while a value of -7 means we are shifting it to be 7 days earlier.
+Even though some regions open on the same date, infections can begin increasing faster or slower than we'd normally expect. We use the `REOPEN_SHIFT_DAYS` to account for that. For example, a value of 7 means that we are shifting the `REOPEN_DATE` to be 7 days later, while a value of -7 means we are shifting it to be 7 days earlier. The default value is 0.
 
 #### `REOPEN_R_MULT`
 
@@ -242,7 +242,7 @@ This is the multiplier we apply to the `LOCKDOWN_R_0` to generate the reopening 
 
 #### `POST_REOPENING_R_DECAY`
 
-This is the multiplier we apply to the R_t approximately 15-30 days after reopening. After some time has passed following a reopening, we assume that the spread will decrease over time due to improvements in contact testing and greater awareness within the population. Read more about our post-reopening assumptions [here](https://covid19-projections.com/about/#post-reopening).
+This is the daily multiplier we apply to the R_t approximately 15-30 days after reopening. After some time has passed following a reopening, we assume that the spread will decrease over time due to improvements in contact testing and greater awareness within the population. The default value is 0.9975. Read more about our post-reopening assumptions [here](https://covid19-projections.com/about/#post-reopening).
 
 ## Question? Bug? Feedback? Suggestions?
 
