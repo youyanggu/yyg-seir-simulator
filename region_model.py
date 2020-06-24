@@ -302,7 +302,7 @@ class RegionModel:
             min_undetected = 0.05
         else:
             # slower testing ramp-up for later-impacted countries
-            days_until_min_undetected = 90
+            days_until_min_undetected = 120
             min_undetected = 0.1
 
         daily_step = (init_undetected_deaths_ratio - min_undetected) / days_until_min_undetected
