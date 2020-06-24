@@ -260,7 +260,7 @@ class RegionModel:
         Full description at: https://covid19-projections.com/about/#infection-fatality-rate-ifr
         """
         assert 0.99 <= MORTALITY_MULTIPLIER <= 1, MORTALITY_MULTIPLIER
-        assert 0 < self.MORTALITY_RATE < 0.05, self.MORTALITY_RATE
+        assert 0 < self.MORTALITY_RATE < 0.2, self.MORTALITY_RATE
 
         ifr_arr = []
         for idx in range(self.N):
