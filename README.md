@@ -196,6 +196,8 @@ python run_simulation.py -v
 
 Note: You can still use the `--set_param` and `--change_param` flags from above, as well as the other flags explained in [Advanced Usage](#advanced-usage).
 
+You are also welcome to change the default parameters in [`fixed_params.py`](fixed_params.py), though we would recommend caution when doing so as many of those parameters have already been optimized.
+
 ## Parameters
 
 There are several parameters that we need to provide the simulator before it can run. We describe them below:
