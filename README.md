@@ -1,6 +1,8 @@
 # YYG / covid19-projections.com SEIR Simulator
 
-We present the underlying SEIR model simulator behind the YYG / [covid19-projections.com](https://covid19-projections.com) model, as well a summarized set of parameters that helped generate the projections. If you are familiar with Python, you can generate your own simulations in under 5 minutes.
+We present the underlying SEIR model simulator behind the YYG / [covid19-projections.com](https://covid19-projections.com) model, as well a summarized set of parameters that helped generate the projections.
+
+If your system supports Python, you can generate your own simulations in under 5 minutes. [Get started here](#setup).
 
 ![SEIR Model Diagram](https://upload.wikimedia.org/wikipedia/commons/3/3d/SEIR.PNG)
 
