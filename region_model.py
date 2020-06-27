@@ -148,6 +148,19 @@ class RegionModel:
 
         return fall_r_mult
 
+    def get_max_post_open_r(self):
+        """Return the max post-open R depending on the region type.
+
+        Country-wide projections have a lower post-open R due to lower variability.
+        """
+
+        if self.subregion_str:
+            return MAX_POST_REOPEN_R + 0.025
+        elif self.region_str != 'ALL':
+            return MAX_POST_REOPEN_R + 0.01
+        else:
+            return MAX_POST_REOPEN_R
+
     def all_param_tups(self):
         """Returns all parameters as a tuple of (param_name, param_value) tuples."""
         all_param_tups = list(self.params_tups[:])
@@ -187,7 +200,8 @@ class RegionModel:
         assert 1 <= self.REOPEN_R_MULT <= 10, self.REOPEN_R_MULT
         reopen_mult = max(1, (2-self.LOCKDOWN_R_0)**0.5 * self.REOPEN_R_MULT)
         reopen_r = reopen_mult * self.LOCKDOWN_R_0
-        post_reopening_r = min(max(MAX_POST_REOPEN_R, self.LOCKDOWN_R_0), reopen_r)
+        max_post_open_r = self.get_max_post_open_r()
+        post_reopening_r = min(max(max_post_open_r, self.LOCKDOWN_R_0), reopen_r)
         assert reopen_r >= self.LOCKDOWN_R_0, 'Reopen R must be >= lockdown R'
 
         reopen_date_shift = self.REOPEN_DATE + \
