@@ -280,14 +280,14 @@ class RegionModel:
 
         Full description at: https://covid19-projections.com/about/#infection-fatality-rate-ifr
         """
-        assert 0.99 <= MORTALITY_MULTIPLIER <= 1, MORTALITY_MULTIPLIER
+        assert 0.9 <= MORTALITY_MULTIPLIER <= 1.1, MORTALITY_MULTIPLIER
         assert 0 < self.MORTALITY_RATE < 0.2, self.MORTALITY_RATE
 
         ifr_arr = []
         for idx in range(self.N):
             if self.country_str in EARLY_IMPACTED_COUNTRIES:
-                # lower IFR after 45 days due to improving treatments/fewer nursing home deaths
-                total_days_with_mult = max(0, idx - 45)
+                # Begin lowering IFR after 30 days due to improving treatments/lower age distribution
+                total_days_with_mult = max(0, idx - 30)
             else:
                 # slower rise in other countries, so we use 120 days
                 total_days_with_mult = max(0, idx - 120)
