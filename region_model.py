@@ -6,7 +6,8 @@ from fixed_params import *
 import utils
 
 
-def get_transition_sigmoid(inflection_day, rate_of_inflection, init_r_0, lockdown_r_0):
+def get_transition_sigmoid(inflection_day, rate_of_inflection, init_r_0, lockdown_r_0,
+        check_values=True):
     """Returns a sigmoid function based on the specified parameters.
 
     A sigmoid helps smooth the transition between init_r_0 and lockdown_r_0,
@@ -14,9 +15,10 @@ def get_transition_sigmoid(inflection_day, rate_of_inflection, init_r_0, lockdow
     rate_of_inflection is typically a value between 0-1, with 1 being a very steep
         transition. We typically use 0.2-0.5 in our projections.
     """
-    assert 0 < rate_of_inflection <= 1, rate_of_inflection
-    assert 0 < init_r_0 <= 10, init_r_0
-    assert 0 <= lockdown_r_0 <= 10, lockdown_r_0
+    if check_values:
+        assert 0 < rate_of_inflection <= 1, rate_of_inflection
+        assert 0 < init_r_0 <= 10, init_r_0
+        assert 0 <= lockdown_r_0 <= 10, lockdown_r_0
     shift = inflection_day
     a = rate_of_inflection
     b = init_r_0 - lockdown_r_0
@@ -124,6 +126,8 @@ class RegionModel:
         # we randomly sample from a triangular distribution to get the post_reopening_r_decay
         if hasattr(self, 'custom_post_reopening_r_decay_range'):
             low, mode, high = self.custom_post_reopening_r_decay_range
+        elif self.country_str == 'US':
+            low, mode, high = 0.993, 0.996, 0.999 # mean is 0.996
         elif self.country_str in EARLY_IMPACTED_COUNTRIES:
             low, mode, high = 0.995, 0.998, 0.999 # mean is ~0.9973
         elif self.has_us_seasonality():
@@ -155,11 +159,12 @@ class RegionModel:
         """
 
         if self.subregion_str:
-            return MAX_POST_REOPEN_R + 0.025
-        elif self.region_str != 'ALL':
-            return MAX_POST_REOPEN_R + 0.01
+            return MAX_POST_REOPEN_R + 0.1
+        elif self.region_str != 'ALL' or self.country_str == 'US':
+            return MAX_POST_REOPEN_R + 0.1
         else:
             return MAX_POST_REOPEN_R
+
 
     def all_param_tups(self):
         """Returns all parameters as a tuple of (param_name, param_value) tuples."""
@@ -222,7 +227,7 @@ class RegionModel:
         sig_lockdown = get_transition_sigmoid(
             self.inflection_day_idx, self.RATE_OF_INFLECTION, self.INITIAL_R_0, self.LOCKDOWN_R_0)
         sig_fatigue = get_transition_sigmoid(
-            fatigue_idx, 0.2, 1, self.LOCKDOWN_FATIGUE)
+            fatigue_idx, 0.2, 0, self.LOCKDOWN_FATIGUE-1, check_values=False)
         sig_reopen = get_transition_sigmoid(
             reopen_idx, 0.2, self.LOCKDOWN_R_0, post_reopening_r)
 
@@ -253,7 +258,7 @@ class RegionModel:
 
                 r_t = sig_reopen(day_idx) * post_reopening_total_decay * fall_r_mult
 
-            r_t *= sig_fatigue(day_idx)
+            r_t *= 1 + sig_fatigue(day_idx)
 
             # Make sure R is stable
             if day_idx > reopen_idx and abs(r_t / R_0_ARR[-1] - 1) > 0.1:
@@ -262,6 +267,8 @@ class RegionModel:
             R_0_ARR.append(r_t)
 
         assert len(R_0_ARR) == self.N
+        self.reopen_idx = reopen_idx
+
         return R_0_ARR
 
     def build_ifr_arr(self):
@@ -280,14 +287,26 @@ class RegionModel:
         for idx in range(self.N):
             if self.country_str in EARLY_IMPACTED_COUNTRIES:
                 # lower IFR after 45 days due to improving treatments/fewer nursing home deaths
-                ifr_mult = max(MIN_MORTALITY_MULTIPLIER, MORTALITY_MULTIPLIER**(max(0, idx - 45)))
+                total_days_with_mult = max(0, idx - 45)
             else:
                 # slower rise in other countries, so we use 120 days
-                ifr_mult = max(MIN_MORTALITY_MULTIPLIER, MORTALITY_MULTIPLIER**(max(0, idx - 120)))
+                total_days_with_mult = max(0, idx - 120)
+
+            if self.country_str == 'US':
+                # We differentiate between pre/post reopening for US
+                # Post-reopening has a greater reduction in the IFR
+                days_after_reopening = max(0, idx - (self.reopen_idx + DAYS_BEFORE_DEATH))
+                days_before_reopening = max(0, total_days_with_mult - days_after_reopening)
+
+                ifr_mult = max(MIN_MORTALITY_MULTIPLIER,
+                    MORTALITY_MULTIPLIER**days_before_reopening * MORTALITY_MULTIPLIER_US_REOPEN**days_after_reopening)
+            else:
+                ifr_mult = max(MIN_MORTALITY_MULTIPLIER, MORTALITY_MULTIPLIER**total_days_with_mult)
             assert 0 < MIN_MORTALITY_MULTIPLIER < 1, MIN_MORTALITY_MULTIPLIER
             assert MIN_MORTALITY_MULTIPLIER <= ifr_mult <= 1, ifr_mult
-            ifr = self.MORTALITY_RATE * ifr_mult
+            ifr = max(MIN_IFR, self.MORTALITY_RATE * ifr_mult)
             ifr_arr.append(ifr)
+
         return ifr_arr
 
     def build_undetected_deaths_ratio_arr(self):
@@ -339,6 +358,15 @@ class RegionModel:
         date : datetime.date
         """
         return (date - self.first_date).days
+
+    def get_date_from_day_idx(self, day_idx):
+        """Get the date given the day index.
+
+        Parameters
+        ----------
+        day_idx : int
+        """
+        return self.first_date + datetime.timedelta(days=day_idx)
 
     def is_holiday(self, date):
         """Determines if a date is a holiday.
