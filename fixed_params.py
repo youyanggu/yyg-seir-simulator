@@ -57,3 +57,4 @@ NON_SEASONAL_COUNTRIES = ['Indonesia', 'Philippines', 'India', 'Malaysia', 'Nige
     'Bolivia', 'Colombia', 'Cuba', 'Dominican Republic', 'Ecuador', 'Honduras', 'Panama', 'Peru', 'Brazil']
 SOUTHERN_HEMISPHERE_COUNTRIES = ['Argentina', 'Australia', 'Chile', 'South Africa']
 EARLY_IMPACTED_COUNTRIES = ['US', 'Canada', 'China', 'Japan', 'South Korea', 'Israel', 'Iran'] + EUROPEAN_COUNTRIES
+COUNTRIES_WITH_NO_FIRST_WAVE = ['Australia']

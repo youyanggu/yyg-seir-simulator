@@ -162,9 +162,10 @@ class RegionModel:
             return MAX_POST_REOPEN_R + 0.1
         elif self.region_str != 'ALL' or self.country_str == 'US':
             return MAX_POST_REOPEN_R + 0.1
+        elif self.country_str in COUNTRIES_WITH_NO_FIRST_WAVE:
+            return MAX_POST_REOPEN_R * 2
         else:
             return MAX_POST_REOPEN_R
-
 
     def all_param_tups(self):
         """Returns all parameters as a tuple of (param_name, param_value) tuples."""
@@ -208,6 +209,7 @@ class RegionModel:
         max_post_open_r = self.get_max_post_open_r()
         post_reopening_r = min(max(max_post_open_r, self.LOCKDOWN_R_0), reopen_r)
         assert reopen_r >= self.LOCKDOWN_R_0, 'Reopen R must be >= lockdown R'
+        assert 0.5 <= self.LOCKDOWN_FATIGUE <= 1.5, self.LOCKDOWN_FATIGUE
 
         reopen_date_shift = self.REOPEN_DATE + \
             datetime.timedelta(days=int(self.REOPEN_SHIFT_DAYS) + DEFAULT_REOPEN_SHIFT_DAYS)
@@ -295,11 +297,11 @@ class RegionModel:
             if self.country_str == 'US':
                 # We differentiate between pre/post reopening for US
                 # Post-reopening has a greater reduction in the IFR
-                days_after_reopening = max(0, idx - (self.reopen_idx + DAYS_BEFORE_DEATH))
-                days_before_reopening = max(0, total_days_with_mult - days_after_reopening)
+                days_after_reopening = max(0, min(30, idx - (self.reopen_idx + DAYS_BEFORE_DEATH)))
+                days_else = max(0, total_days_with_mult - days_after_reopening)
 
                 ifr_mult = max(MIN_MORTALITY_MULTIPLIER,
-                    MORTALITY_MULTIPLIER**days_before_reopening * MORTALITY_MULTIPLIER_US_REOPEN**days_after_reopening)
+                    MORTALITY_MULTIPLIER**days_else * MORTALITY_MULTIPLIER_US_REOPEN**days_after_reopening)
             else:
                 ifr_mult = max(MIN_MORTALITY_MULTIPLIER, MORTALITY_MULTIPLIER**total_days_with_mult)
             assert 0 < MIN_MORTALITY_MULTIPLIER < 1, MIN_MORTALITY_MULTIPLIER
