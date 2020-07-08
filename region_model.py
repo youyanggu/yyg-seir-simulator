@@ -108,6 +108,7 @@ class RegionModel:
             f'reopen date {self.REOPEN_DATE} must be after inflection day {self.INFLECTION_DAY}'
         self.params_tups = params_tups
         self.post_reopening_r_decay = self.get_post_reopening_r_decay()
+        self.fall_r_multiplier = self.get_fall_r_multiplier()
         self.R_0_ARR = self.build_r_0_arr()
         self.ifr_arr = self.build_ifr_arr()
         self.undetected_deaths_ratio_arr = self.build_undetected_deaths_ratio_arr()
@@ -147,7 +148,7 @@ class RegionModel:
 
         if not self.has_us_seasonality():
             return 1
-        low, mode, high = 1, 1.001, 1.002 # mean is ~1.001
+        low, mode, high = 0.998, 1.001, 1.005 # mean is ~1.0013
         fall_r_mult = np.random.triangular(low, mode, high)
 
         return fall_r_mult
@@ -170,7 +171,7 @@ class RegionModel:
     def all_param_tups(self):
         """Returns all parameters as a tuple of (param_name, param_value) tuples."""
         all_param_tups = list(self.params_tups[:])
-        for addl_param in ['post_reopening_r_decay']:
+        for addl_param in ['post_reopening_r_decay', 'fall_r_multiplier']:
             all_param_tups.append((addl_param.upper(), getattr(self, addl_param)))
         return tuple(all_param_tups)
 
@@ -224,7 +225,7 @@ class RegionModel:
         else:
             days_until_post_reopening = 15
         post_reopening_idx = reopen_idx + days_until_post_reopening
-        fall_start_idx = self.get_day_idx_from_date(FALL_START_DATE_NORTH)
+        fall_start_idx = self.get_day_idx_from_date(FALL_START_DATE_NORTH) - 30
 
         sig_lockdown = get_transition_sigmoid(
             self.inflection_day_idx, self.RATE_OF_INFLECTION, self.INITIAL_R_0, self.LOCKDOWN_R_0)
@@ -254,9 +255,9 @@ class RegionModel:
                 assert 0 < post_reopening_total_decay <= 1, post_reopening_total_decay
 
                 if day_idx > fall_start_idx:
-                    fall_r_mult = min(
-                        1.1, self.get_fall_r_multiplier()**(day_idx-fall_start_idx))
-                assert 1 <= fall_r_mult < 2, fall_r_mult
+                    fall_r_mult = max(0.9, min(
+                        1.2, self.fall_r_multiplier**(day_idx-fall_start_idx)))
+                assert 0.9 <= fall_r_mult <= 1.2, fall_r_mult
 
                 r_t = sig_reopen(day_idx) * post_reopening_total_decay * fall_r_mult
 
@@ -264,7 +265,7 @@ class RegionModel:
 
             # Make sure R is stable
             if day_idx > reopen_idx and abs(r_t / R_0_ARR[-1] - 1) > 0.1:
-                assert False, f'R changed too quickly: {day_idx} {r_t} {R_0_ARR}'
+                assert False, f'R changed too quickly: {day_idx} {R_0_ARR[-1]} -> {r_t} {R_0_ARR}'
 
             R_0_ARR.append(r_t)
 

@@ -2,7 +2,7 @@ import datetime
 
 import numpy as np
 
-PROJECTION_END_DATE = datetime.date(2020,10,1)
+PROJECTION_END_DATE = datetime.date(2020,11,1)
 INCUBATION_DAYS = 2 # minimal incubation period of 2 days
 INFECTIOUS_DAYS_ARR = np.array([0.5,1,2,3,2,1,0.5]) # distribution of infections by days after INCUBATION_DAYS; mean serial interval of 5 days
 DEATHS_DAYS_ARR = np.array([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]) # distribution of deaths by days after exposure, centered around DAYS_BEFORE_DEATH
