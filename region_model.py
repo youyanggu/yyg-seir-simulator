@@ -127,7 +127,7 @@ class RegionModel:
         # we randomly sample from a triangular distribution to get the post_reopening_r_decay
         if hasattr(self, 'custom_post_reopening_r_decay_range'):
             low, mode, high = self.custom_post_reopening_r_decay_range
-        elif self.country_str == 'US':
+        elif self.country_str == 'US' or self.country_str in COUNTRIES_WITH_LARGER_SECOND_WAVE:
             low, mode, high = 0.993, 0.996, 0.999 # mean is 0.996
         elif self.country_str in EARLY_IMPACTED_COUNTRIES:
             low, mode, high = 0.995, 0.998, 0.999 # mean is ~0.9973
@@ -163,7 +163,7 @@ class RegionModel:
             return MAX_POST_REOPEN_R + 0.1
         elif self.region_str != 'ALL' or self.country_str == 'US':
             return MAX_POST_REOPEN_R + 0.1
-        elif self.country_str in COUNTRIES_WITH_NO_FIRST_WAVE:
+        elif self.country_str in COUNTRIES_WITH_LARGER_SECOND_WAVE:
             return MAX_POST_REOPEN_R * 2
         else:
             return MAX_POST_REOPEN_R
@@ -204,7 +204,7 @@ class RegionModel:
                     print(lockdown_r, orig_reopen_r, new_reopen_r)
         """
 
-        assert 1 <= self.REOPEN_R_MULT <= 10, self.REOPEN_R_MULT
+        assert 1-1e-6 <= self.REOPEN_R_MULT <= 10, self.REOPEN_R_MULT
         reopen_mult = max(1, (2-self.LOCKDOWN_R_0)**0.5 * self.REOPEN_R_MULT)
         reopen_r = reopen_mult * self.LOCKDOWN_R_0
         max_post_open_r = self.get_max_post_open_r()
@@ -298,7 +298,7 @@ class RegionModel:
             if self.country_str == 'US':
                 # We differentiate between pre/post reopening for US
                 # Post-reopening has a greater reduction in the IFR
-                days_after_reopening = max(0, min(30, idx - (self.reopen_idx + DAYS_BEFORE_DEATH)))
+                days_after_reopening = max(0, min(30, idx - (self.reopen_idx + DAYS_BEFORE_DEATH // 2)))
                 days_else = max(0, total_days_with_mult - days_after_reopening)
 
                 ifr_mult = max(MIN_MORTALITY_MULTIPLIER,

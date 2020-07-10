@@ -73,9 +73,10 @@ def get_immunity_mult(region_model):
         immunity_mult = inv_sigmoid(
             20000000, 0.00000003, IMMUNITY_MULTIPLIER-1.25, 1.25)(population)
 
-    if region_model.country_str not in EARLY_IMPACTED_COUNTRIES:
-        # these countries may not have comprehensive early testing, hence we
-        # correct for that by increasing the immunity mult
+    if region_model.country_str not in EARLY_IMPACTED_COUNTRIES + ['Brazil', 'Mexico']:
+        # These countries may not have comprehensive early testing, so the true prevalence
+        #   may be higher, hence we correct for that by increasing the immunity mult
+        # We also do not include Brazil/Mexico due to the already-high immunity_mult
         immunity_mult *= 1.1
 
     return immunity_mult
