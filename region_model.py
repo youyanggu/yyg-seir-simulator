@@ -121,7 +121,7 @@ class RegionModel:
             uniform distribution to generate the post-reopening ratio to model uncertainty.
         """
 
-        if hasattr(self, 'POST_REOPENING_R_DECAY'):
+        if hasattr(self, 'POST_REOPENING_R_DECAY') and not np.isnan(self.POST_REOPENING_R_DECAY):
             return self.POST_REOPENING_R_DECAY
 
         # we randomly sample from a triangular distribution to get the post_reopening_r_decay
@@ -146,6 +146,9 @@ class RegionModel:
         Full description at https://covid19-projections.com/about/#fall-wave
         """
 
+        if hasattr(self, 'FALL_R_MULTIPLIER') and not np.isnan(self.FALL_R_MULTIPLIER):
+            return self.FALL_R_MULTIPLIER
+
         if not self.has_us_seasonality():
             return 1
         low, mode, high = 0.998, 1.001, 1.005 # mean is ~1.0013
@@ -153,16 +156,17 @@ class RegionModel:
 
         return fall_r_mult
 
-    def get_max_post_open_r(self):
+    def get_max_post_reopen_r(self):
         """Return the max post-open R depending on the region type.
 
         Country-wide projections have a lower post-open R due to lower variability.
+        US projections have a higher post-open R because states are bad at mitigation.
         """
 
         if self.subregion_str:
-            return MAX_POST_REOPEN_R + 0.1
+            return MAX_POST_REOPEN_R * 1.1
         elif self.region_str != 'ALL' or self.country_str == 'US':
-            return MAX_POST_REOPEN_R + 0.1
+            return MAX_POST_REOPEN_R * 1.1
         elif self.country_str in COUNTRIES_WITH_LARGER_SECOND_WAVE:
             return MAX_POST_REOPEN_R * 2
         else:
@@ -170,7 +174,10 @@ class RegionModel:
 
     def all_param_tups(self):
         """Returns all parameters as a tuple of (param_name, param_value) tuples."""
-        all_param_tups = list(self.params_tups[:])
+        all_param_tups = []
+        for k,v in self.params_tups:
+            if k.lower() not in ['post_reopening_r_decay', 'fall_r_multiplier']:
+                all_param_tups.append((k, v))
         for addl_param in ['post_reopening_r_decay', 'fall_r_multiplier']:
             all_param_tups.append((addl_param.upper(), getattr(self, addl_param)))
         return tuple(all_param_tups)
@@ -207,8 +214,8 @@ class RegionModel:
         assert 1-1e-6 <= self.REOPEN_R_MULT <= 10, self.REOPEN_R_MULT
         reopen_mult = max(1, (2-self.LOCKDOWN_R_0)**0.5 * self.REOPEN_R_MULT)
         reopen_r = reopen_mult * self.LOCKDOWN_R_0
-        max_post_open_r = self.get_max_post_open_r()
-        post_reopening_r = min(max(max_post_open_r, self.LOCKDOWN_R_0), reopen_r)
+        max_post_reopen_r = self.get_max_post_reopen_r()
+        post_reopening_r = min(max(max_post_reopen_r, self.LOCKDOWN_R_0), reopen_r)
         assert reopen_r >= self.LOCKDOWN_R_0, 'Reopen R must be >= lockdown R'
         assert 0.5 <= self.LOCKDOWN_FATIGUE <= 1.5, self.LOCKDOWN_FATIGUE
 
