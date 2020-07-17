@@ -127,17 +127,22 @@ class RegionModel:
         # we randomly sample from a triangular distribution to get the post_reopening_r_decay
         if hasattr(self, 'custom_post_reopening_r_decay_range'):
             low, mode, high = self.custom_post_reopening_r_decay_range
-        elif self.country_str == 'US' or self.country_str in COUNTRIES_WITH_LARGER_SECOND_WAVE:
-            low, mode, high = 0.993, 0.996, 0.999 # mean is 0.996
+        elif self.country_str == 'US':
+            if self.region_str in ['CA', 'AZ', 'NV', 'ID', 'MT', 'OK', 'TX', 'LA',
+                    'AR', 'AL', 'TN', 'KY', 'GA', 'FL', 'NC', 'SC']:
+                # regions with heavy outbreaks -> R decreases faster
+                low, mode, high = 0.99, 0.994, 0.998 # mean is 0.994
+            else:
+                low, mode, high = 0.991, 0.995, 0.999 # mean is 0.995
+        elif self.country_str in COUNTRIES_WITH_LARGER_SECOND_WAVE:
+            low, mode, high = 0.989, 0.994, 0.999 # mean is 0.994
         elif self.country_str in EARLY_IMPACTED_COUNTRIES:
-            low, mode, high = 0.995, 0.998, 0.999 # mean is ~0.9973
-        elif self.has_us_seasonality():
-            low, mode, high = 0.995, 0.9975, 1 # mean is ~0.9975
+            low, mode, high = 0.995, 0.997, 0.999 # mean is 0.997
         else:
-            low, mode, high = 0.996, 0.998, 1 # mean is ~0.998
+            low, mode, high = 0.995, 0.9975, 1 # mean is 0.9975
         post_reopening_r_decay = np.random.triangular(low, mode, high)
 
-        assert 0 < post_reopening_r_decay <= 1
+        assert 0 < post_reopening_r_decay < 2, post_reopening_r_decay
         return post_reopening_r_decay
 
     def get_fall_r_multiplier(self):
@@ -164,9 +169,11 @@ class RegionModel:
         """
 
         if self.subregion_str:
-            return MAX_POST_REOPEN_R * 1.1
+            return MAX_POST_REOPEN_R * 1.15
         elif self.region_str != 'ALL' or self.country_str == 'US':
-            return MAX_POST_REOPEN_R * 1.1
+            if self.region_str == 'FL':
+                return MAX_POST_REOPEN_R * 1.2 # special exception for Florida
+            return MAX_POST_REOPEN_R * 1.15
         elif self.country_str in COUNTRIES_WITH_LARGER_SECOND_WAVE:
             return MAX_POST_REOPEN_R * 2
         else:
@@ -256,10 +263,10 @@ class RegionModel:
 
                 if day_idx > post_reopening_idx:
                     assert day_idx > reopen_idx, day_idx
-                    post_reopening_total_decay = max(
+                    post_reopening_total_decay = min(1.1, max(
                         min_post_reopening_total_decay,
-                        self.post_reopening_r_decay**(day_idx-post_reopening_idx))
-                assert 0 < post_reopening_total_decay <= 1, post_reopening_total_decay
+                        self.post_reopening_r_decay**(day_idx-post_reopening_idx)))
+                assert 0 < post_reopening_total_decay < 2, post_reopening_total_decay
 
                 if day_idx > fall_start_idx:
                     fall_r_mult = max(0.9, min(
