@@ -8,7 +8,6 @@ import datetime
 import numpy as np
 
 from fixed_params import *
-from utils import inv_sigmoid
 
 
 def get_daily_imports(region_model, i):
@@ -48,40 +47,6 @@ def get_daily_imports(region_model, i):
     return daily_imports
 
 
-def get_immunity_mult(region_model):
-    """Returns the immunity multiplier, a measure of the immunity in a region.
-
-    The greater the immunity multiplier, the greater the effect of immunity.
-    The more populous a region, the greater the effect of immunity (since outbreaks
-        are usually localized)
-    Later on, use this multiplier by multiplying the transmission rate by:
-        effective_r = R_t * (1-perc_population_infected_thus_far)**immunity_mult
-    """
-
-    population = region_model.region_params['population']
-    if region_model.country_str == 'US':
-        if region_model.subregion_str:
-            immunity_mult = IMMUNITY_MULTIPLIER_US_SUBREGION
-        else:
-            immunity_mult = IMMUNITY_MULTIPLIER
-    elif region_model.subregion_str:
-        immunity_mult = IMMUNITY_MULTIPLIER
-    elif population < 20000000:
-        immunity_mult = inv_sigmoid(
-            10000000, 0.0000003, IMMUNITY_MULTIPLIER-1, 1)(population)
-    else:
-        immunity_mult = inv_sigmoid(
-            20000000, 0.00000003, IMMUNITY_MULTIPLIER-1.25, 1.25)(population)
-
-    if region_model.country_str not in EARLY_IMPACTED_COUNTRIES + ['Brazil', 'Mexico']:
-        # These countries may not have comprehensive early testing, so the true prevalence
-        #   may be higher, hence we correct for that by increasing the immunity mult
-        # We also do not include Brazil/Mexico due to the already-high immunity_mult
-        immunity_mult *= 1.1
-
-    return immunity_mult
-
-
 def run(region_model):
     """Given a RegionModel object, runs the SEIR simulation."""
     dates = np.array([region_model.first_date + datetime.timedelta(days=i) \
@@ -111,10 +76,7 @@ def run(region_model):
                 (1 - region_model.quarantine_fraction))
 
     # the greater the immunity mult, the greater the effect of immunity
-    immunity_mult = get_immunity_mult(region_model)
-    assert 0 <= IMMUNITY_MULTIPLIER <= 1, IMMUNITY_MULTIPLIER
-    assert 0 <= IMMUNITY_MULTIPLIER_US_SUBREGION <= 1, IMMUNITY_MULTIPLIER_US_SUBREGION
-    assert 0 <= immunity_mult <= 2, immunity_mult
+    assert 0 <= region_model.immunity_mult <= 2, region_model.immunity_mult
 
     ########################################
     # Compute infections
@@ -131,7 +93,7 @@ def run(region_model):
             min(1., infections[:i-1].sum() / region_model.population)
         assert 0 <= perc_population_infected_thus_far <= 1, perc_population_infected_thus_far
 
-        r_immunity_perc = (1. - perc_population_infected_thus_far)**immunity_mult
+        r_immunity_perc = (1. - perc_population_infected_thus_far)**region_model.immunity_mult
         effective_r = region_model.R_0_ARR[i] * r_immunity_perc
         # we apply a convolution on the infections norm array
         s = (infections[i-INCUBATION_DAYS-len(infections_norm)+1:i-INCUBATION_DAYS+1] * \

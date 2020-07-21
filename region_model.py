@@ -108,10 +108,63 @@ class RegionModel:
             f'reopen date {self.REOPEN_DATE} must be after inflection day {self.INFLECTION_DAY}'
         self.params_tups = params_tups
         self.post_reopening_r_decay = self.get_post_reopening_r_decay()
+        self.post_reopening_equilibrium_r = self.get_post_reopening_equilibrium_r()
         self.fall_r_multiplier = self.get_fall_r_multiplier()
+        self.immunity_mult = self.get_immunity_mult()
         self.R_0_ARR = self.build_r_0_arr()
         self.ifr_arr = self.build_ifr_arr()
         self.undetected_deaths_ratio_arr = self.build_undetected_deaths_ratio_arr()
+
+    def all_param_tups(self):
+        """Returns all parameters as a tuple of (param_name, param_value) tuples."""
+        all_param_tups = []
+        for k,v in self.params_tups:
+            if k not in RANDOMIZED_PARAMS:
+                all_param_tups.append((k, v))
+        for addl_param in RANDOMIZED_PARAMS:
+            all_param_tups.append((addl_param, getattr(self, addl_param.lower())))
+        return tuple(all_param_tups)
+
+    def get_max_reopen_r(self):
+        """Return the max reopen R depending on the region type.
+
+        Country-wide projections have a lower post-open R due to lower variability.
+        US projections have a higher post-open R because states are bad at mitigation.
+        """
+
+        if self.subregion_str:
+            return MAX_POST_REOPEN_R * 1.2
+        elif self.region_str != 'ALL' or self.country_str == 'US':
+            if self.region_str in ['ID']:
+                return MAX_POST_REOPEN_R * 1.25
+            return MAX_POST_REOPEN_R * 1.2
+        elif self.country_str in COUNTRIES_WITH_LARGER_SECOND_WAVE:
+            return MAX_POST_REOPEN_R * 1.5
+        else:
+            return MAX_POST_REOPEN_R
+
+    def get_reopen_r(self):
+        """Compute the R value after reopening.
+
+        To compute the reopen R, we apply a multiplier REOPEN_R_MULT to the lockdown R.
+            We map this multiplier to reopen_mult, which assumes greater growth if the
+            initial lockdown R is effective.
+            e.g. 10% growth for R=1->1.1, but 10% growth for R=0.7 -> (2-0.7)**0.5*1.1*.7 = 0.88
+            reopen_mult becomes 1 at around R=1.17 (i.e. no increase on reopening)
+
+            Sample code below to compare the difference:
+                mult = 1.1
+                for lockdown_r in np.arange(0.5,1.21,0.05):
+                    orig_reopen_r = mult * lockdown_r
+                    reopen_mult = max(1, (2-lockdown_r)**0.5*mult)
+                    new_reopen_r = reopen_mult * lockdown_r
+                    print(lockdown_r, orig_reopen_r, new_reopen_r)
+        """
+        assert 1-1e-6 <= self.REOPEN_R_MULT <= 10, self.REOPEN_R_MULT
+        reopen_mult = max(1, (2-self.LOCKDOWN_R_0)**0.5 * self.REOPEN_R_MULT)
+        reopen_r_unadjusted = reopen_mult * self.LOCKDOWN_R_0
+        reopen_r = min(max(self.get_max_reopen_r(), self.LOCKDOWN_R_0), reopen_r_unadjusted)
+        return reopen_r
 
     def get_post_reopening_r_decay(self):
         """Calculates the post-reopening R decay.
@@ -125,25 +178,52 @@ class RegionModel:
             return self.POST_REOPENING_R_DECAY
 
         # we randomly sample from a triangular distribution to get the post_reopening_r_decay
+        reopen_r = self.get_reopen_r()
         if hasattr(self, 'custom_post_reopening_r_decay_range'):
             low, mode, high = self.custom_post_reopening_r_decay_range
-        elif self.country_str == 'US':
-            if self.region_str in ['CA', 'AZ', 'NV', 'ID', 'MT', 'OK', 'TX', 'LA',
-                    'AR', 'AL', 'TN', 'KY', 'GA', 'FL', 'NC', 'SC']:
-                # regions with heavy outbreaks -> R decreases faster
-                low, mode, high = 0.99, 0.994, 0.998 # mean is 0.994
-            else:
-                low, mode, high = 0.991, 0.995, 0.999 # mean is 0.995
         elif self.country_str in COUNTRIES_WITH_LARGER_SECOND_WAVE:
-            low, mode, high = 0.989, 0.994, 0.999 # mean is 0.994
+            if reopen_r > 1.4:
+                # regions with heavy outbreaks -> R decreases faster
+                low, mode, high = 0.985, 0.991, 0.997 # mean is 0.991
+            elif reopen_r > 1.2:
+                # regions with heavy outbreaks -> R decreases faster
+                low, mode, high = 0.988, 0.993, 0.998 # mean is 0.993
+            elif reopen_r > 1:
+                low, mode, high = 0.991, 0.995, 0.999 # mean is 0.995
+            else:
+                low, mode, high = 0.994, 0.997, 1 # mean is 0.997
         elif self.country_str in EARLY_IMPACTED_COUNTRIES:
-            low, mode, high = 0.995, 0.997, 0.999 # mean is 0.997
+            if reopen_r > 1.1:
+                low, mode, high = 0.992, 0.995, 0.998 # mean is 0.995
+            else:
+                low, mode, high = 0.993, 0.996, 0.999 # mean is 0.996
         else:
-            low, mode, high = 0.995, 0.9975, 1 # mean is 0.9975
+            if reopen_r > 1.1:
+                low, mode, high = 0.993, 0.996, 0.999 # mean is 0.996
+            else:
+                low, mode, high = 0.994, 0.997, 1 # mean is 0.997
         post_reopening_r_decay = np.random.triangular(low, mode, high)
 
         assert 0 < post_reopening_r_decay < 2, post_reopening_r_decay
         return post_reopening_r_decay
+
+    def get_post_reopening_equilibrium_r(self):
+        """Calculates the post-reopening equilibrium R.
+
+        This is the R value after reopening effects have stablized and infection rates
+            reach an equilibrium. This does not take into account immunity,
+            so the equilibrium R can be above 1 while true infection rates decrease.
+
+        """
+        if hasattr(self, 'POST_REOPENING_EQUILIBRIUM_R') and \
+                not np.isnan(self.POST_REOPENING_EQUILIBRIUM_R):
+            return self.POST_REOPENING_EQUILIBRIUM_R
+
+        low, mode, high = 0.9, 1, 1.1 # mean is 1
+        post_reopening_equilibrium_r = np.random.triangular(low, mode, high)
+
+        assert 0 < post_reopening_equilibrium_r < 10, post_reopening_equilibrium_r
+        return post_reopening_equilibrium_r
 
     def get_fall_r_multiplier(self):
         """We currently assume a minor uptick in R in the fall for seasonal countries.
@@ -161,33 +241,41 @@ class RegionModel:
 
         return fall_r_mult
 
-    def get_max_post_reopen_r(self):
-        """Return the max post-open R depending on the region type.
+    def get_immunity_mult(self):
+        """Returns the immunity multiplier, a measure of the immunity in a region.
 
-        Country-wide projections have a lower post-open R due to lower variability.
-        US projections have a higher post-open R because states are bad at mitigation.
+        The greater the immunity multiplier, the greater the effect of immunity.
+        The more populous a region, the greater the effect of immunity (since outbreaks
+            are usually localized)
+        Later on, use this multiplier by multiplying the transmission rate by:
+            effective_r = R_t * (1-perc_population_infected_thus_far)**immunity_mult
         """
 
-        if self.subregion_str:
-            return MAX_POST_REOPEN_R * 1.15
-        elif self.region_str != 'ALL' or self.country_str == 'US':
-            if self.region_str == 'FL':
-                return MAX_POST_REOPEN_R * 1.2 # special exception for Florida
-            return MAX_POST_REOPEN_R * 1.15
-        elif self.country_str in COUNTRIES_WITH_LARGER_SECOND_WAVE:
-            return MAX_POST_REOPEN_R * 2
-        else:
-            return MAX_POST_REOPEN_R
+        assert 0 <= IMMUNITY_MULTIPLIER <= 2, IMMUNITY_MULTIPLIER
+        assert 0 <= IMMUNITY_MULTIPLIER_US_SUBREGION <= 2, IMMUNITY_MULTIPLIER_US_SUBREGION
 
-    def all_param_tups(self):
-        """Returns all parameters as a tuple of (param_name, param_value) tuples."""
-        all_param_tups = []
-        for k,v in self.params_tups:
-            if k.lower() not in ['post_reopening_r_decay', 'fall_r_multiplier']:
-                all_param_tups.append((k, v))
-        for addl_param in ['post_reopening_r_decay', 'fall_r_multiplier']:
-            all_param_tups.append((addl_param.upper(), getattr(self, addl_param)))
-        return tuple(all_param_tups)
+        population = self.region_params['population']
+        if self.country_str == 'US':
+            if self.subregion_str:
+                immunity_mult = IMMUNITY_MULTIPLIER_US_SUBREGION
+            else:
+                immunity_mult = IMMUNITY_MULTIPLIER
+        elif self.subregion_str:
+            immunity_mult = IMMUNITY_MULTIPLIER
+        elif population < 20000000:
+            immunity_mult = utils.inv_sigmoid(
+                10000000, 0.0000003, IMMUNITY_MULTIPLIER-1, 1)(population)
+        else:
+            immunity_mult = utils.inv_sigmoid(
+                20000000, 0.00000003, IMMUNITY_MULTIPLIER-1.25, 1.25)(population)
+
+        if self.country_str not in EARLY_IMPACTED_COUNTRIES + ['Brazil', 'Mexico']:
+            # These countries may not have comprehensive early testing, so the true prevalence
+            #   may be higher, hence we correct for that by increasing the immunity mult
+            # We also do not include Brazil/Mexico due to the already-high immunity_mult
+            immunity_mult *= 1.1
+
+        return immunity_mult
 
     def build_r_0_arr(self):
         """Returns an array of the reproduction numbers (R) for each day.
@@ -203,26 +291,9 @@ class RegionModel:
             We use an inverse logistic/sigmoid function to smooth the transition between
             the three R values.
 
-        To compute the reopen R, we apply a multiplier REOPEN_R_MULT to the lockdown R.
-            We map this multiplier to reopen_mult, which assumes greater growth if the
-            initial lockdown R is effective.
-            e.g. 10% growth for R=1->1.1, but 10% growth for R=0.7 -> (2-0.7)**0.5*1.1*.7 = 0.88
-            reopen_mult becomes 1 at around R=1.17 (i.e. no increase on reopening)
-
-            Sample code below to compare the difference:
-                mult = 1.1
-                for lockdown_r in np.arange(0.5,1.21,0.05):
-                    orig_reopen_r = mult * lockdown_r
-                    reopen_mult = max(1, (2-lockdown_r)**0.5*mult)
-                    new_reopen_r = reopen_mult * lockdown_r
-                    print(lockdown_r, orig_reopen_r, new_reopen_r)
         """
 
-        assert 1-1e-6 <= self.REOPEN_R_MULT <= 10, self.REOPEN_R_MULT
-        reopen_mult = max(1, (2-self.LOCKDOWN_R_0)**0.5 * self.REOPEN_R_MULT)
-        reopen_r = reopen_mult * self.LOCKDOWN_R_0
-        max_post_reopen_r = self.get_max_post_reopen_r()
-        post_reopening_r = min(max(max_post_reopen_r, self.LOCKDOWN_R_0), reopen_r)
+        reopen_r = self.get_reopen_r()
         assert reopen_r >= self.LOCKDOWN_R_0, 'Reopen R must be >= lockdown R'
         assert 0.5 <= self.LOCKDOWN_FATIGUE <= 1.5, self.LOCKDOWN_FATIGUE
 
@@ -246,13 +317,13 @@ class RegionModel:
         sig_fatigue = get_transition_sigmoid(
             fatigue_idx, 0.2, 0, self.LOCKDOWN_FATIGUE-1, check_values=False)
         sig_reopen = get_transition_sigmoid(
-            reopen_idx, 0.2, self.LOCKDOWN_R_0, post_reopening_r)
+            reopen_idx, 0.2, self.LOCKDOWN_R_0, reopen_r)
 
         dates = utils.date_range(self.first_date, self.projection_end_date)
         assert len(dates) == self.N
 
-        # how much to drop post_reopening_r R to get to 1 (max 0.9)
-        min_post_reopening_total_decay = min(0.9, 1 / post_reopening_r)
+        # how much to multiple reopen R to get to the equilibrium R (max 0.9)
+        min_post_reopening_total_decay = min(0.9, self.post_reopening_equilibrium_r / reopen_r)
 
         R_0_ARR = [self.INITIAL_R_0]
         for day_idx in range(1, self.N):
@@ -309,8 +380,7 @@ class RegionModel:
                 # slower rise in other countries, so we use 120 days
                 total_days_with_mult = max(0, idx - 120)
 
-            if self.country_str == 'US':
-                # We differentiate between pre/post reopening for US
+            if self.country_str in EARLY_IMPACTED_COUNTRIES:
                 # Post-reopening has a greater reduction in the IFR
                 days_after_reopening = max(0, min(30, idx - (self.reopen_idx + DAYS_BEFORE_DEATH // 2)))
                 days_else = max(0, total_days_with_mult - days_after_reopening)

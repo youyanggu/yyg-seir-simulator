@@ -18,10 +18,11 @@ DAYS_UNTIL_RECOVERY = 15 # assume 15 days for mild cases
 IMMUNITY_MULTIPLIER = 0.5
 IMMUNITY_MULTIPLIER_US_SUBREGION = 0.3
 DAYS_UNTIL_LOCKDOWN_FATIGUE = 28
-MAX_POST_REOPEN_R = 1.16
+MAX_POST_REOPEN_R = 1.2
 DAYS_WITH_IMPORTS = 100
 USE_UNDETECTED_DEATHS_RATIO = True
 DEFAULT_REOPEN_SHIFT_DAYS = 15
+RANDOMIZED_PARAMS = ['POST_REOPENING_R_DECAY', 'FALL_R_MULTIPLIER', 'POST_REOPENING_EQUILIBRIUM_R']
 
 DATE_STR_FMT = '%Y-%m-%d'
 ADDL_US_HOLIDAYS = [datetime.date(2020,4,12), datetime.date(2020,5,10), datetime.date(2020,10,31)] # Eastern, Mother's Day, Halloween
@@ -57,4 +58,4 @@ NON_SEASONAL_COUNTRIES = ['Indonesia', 'Philippines', 'India', 'Malaysia', 'Nige
     'Bolivia', 'Colombia', 'Cuba', 'Dominican Republic', 'Ecuador', 'Honduras', 'Panama', 'Peru', 'Brazil']
 SOUTHERN_HEMISPHERE_COUNTRIES = ['Argentina', 'Australia', 'Chile', 'South Africa']
 EARLY_IMPACTED_COUNTRIES = ['US', 'Canada', 'China', 'Japan', 'South Korea', 'Israel', 'Iran'] + EUROPEAN_COUNTRIES
-COUNTRIES_WITH_LARGER_SECOND_WAVE = ['Australia', 'Israel', 'Serbia']
+COUNTRIES_WITH_LARGER_SECOND_WAVE = ['US', 'Australia', 'Israel', 'Philippines', 'Serbia']
