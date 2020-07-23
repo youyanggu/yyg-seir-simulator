@@ -5,11 +5,12 @@ import numpy as np
 PROJECTION_END_DATE = datetime.date(2020,11,1)
 INCUBATION_DAYS = 2 # minimal incubation period of 2 days
 INFECTIOUS_DAYS_ARR = np.array([0.5,1,2,3,2,1,0.5]) # distribution of infections by days after INCUBATION_DAYS; mean serial interval of 5 days
-DEATHS_DAYS_ARR = np.array([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]) # distribution of deaths by days after exposure, centered around DAYS_BEFORE_DEATH
+DEATHS_DAYS_ARR = np.array([1,2,3,4,4,3,3,3,2,2,2,1,1,1,1]) # distribution of deaths by days after exposure, centered around DAYS_BEFORE_DEATH
+DEATH_REPORTING_LAG_ARR = np.array([0] + [15*0.85**i for i in range(30)]) # ~55% of deaths are reported within 5 days and ~80% within 10 days
 MORTALITY_MULTIPLIER = 0.995 # decreasing IFR over time: https://covid19-projections.com/about/#infection-fatality-rate-ifr
-MORTALITY_MULTIPLIER_US_REOPEN = 0.98 # faster rate of IFR decrease in the US after reopening
+MORTALITY_MULTIPLIER_US_REOPEN = 0.975 # faster rate of IFR decrease in the US after reopening
 MIN_MORTALITY_MULTIPLIER = 0.3 # for a 0.995 mortality mutliplier, this kicks in after ~3.5 months for 0.75, ~7.5 months for 0.4
-MIN_IFR = 0.0025
+MIN_IFR = 0.002
 DAYS_UNTIL_HOSPITALIZATION = 12 # Hospitalization parameters from many sources, including: https://doi.org/10.1016/S0140-6736(20)30566-3
 HOSPITALIZATION_RATE = 0.034 # based on CDC report as of 2020-05-20: https://www.cdc.gov/coronavirus/2019-ncov/hcp/planning-scenarios.html
 DAYS_IN_HOSPITAL = 11
@@ -22,7 +23,8 @@ MAX_POST_REOPEN_R = 1.2
 DAYS_WITH_IMPORTS = 100
 USE_UNDETECTED_DEATHS_RATIO = True
 DEFAULT_REOPEN_SHIFT_DAYS = 15
-RANDOMIZED_PARAMS = ['POST_REOPENING_R_DECAY', 'FALL_R_MULTIPLIER', 'POST_REOPENING_EQUILIBRIUM_R']
+DATE_PARAMS = ['INFLECTION_DAY', 'REOPEN_DATE']
+RANDOMIZED_PARAMS = ['POST_REOPEN_EQUILIBRIUM_R', 'FALL_R_MULTIPLIER']
 
 DATE_STR_FMT = '%Y-%m-%d'
 ADDL_US_HOLIDAYS = [datetime.date(2020,4,12), datetime.date(2020,5,10), datetime.date(2020,10,31)] # Eastern, Mother's Day, Halloween

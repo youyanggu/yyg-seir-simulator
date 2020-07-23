@@ -54,10 +54,11 @@ def run(region_model):
     infections = np.array([0.] * region_model.N)
     hospitalizations = np.zeros(region_model.N) * np.nan
     deaths = np.array([0.] * region_model.N)
+    reported_deaths = np.array([0.] * region_model.N)
     mortaility_rates = np.array([region_model.MORTALITY_RATE] * region_model.N)
 
     assert infections.dtype == hospitalizations.dtype == \
-        deaths.dtype == mortaility_rates.dtype == np.float64
+        deaths.dtype == reported_deaths.dtype == mortaility_rates.dtype == np.float64
 
     """
     We compute a normalized version of the infections and deaths probability distribution.
@@ -120,7 +121,7 @@ def run(region_model):
             hospitalizations[_i] = int(HOSPITALIZATION_RATE * infections[start_idx:end_idx].sum())
 
     ########################################
-    # Compute deaths
+    # Compute true deaths
     ########################################
     assert len(deaths_norm) % 2 == 1, 'deaths arr must be odd length'
     deaths_offset = len(deaths_norm) // 2
@@ -129,9 +130,26 @@ def run(region_model):
         infections_subject_to_death = (infections[max(0, _i-deaths_offset):_i+deaths_offset+1] * \
             deaths_norm[:min(len(deaths_norm), deaths_offset+_i+1)]).sum()
         true_deaths = infections_subject_to_death * region_model.ifr_arr[_i + DAYS_BEFORE_DEATH]
-        reported_deaths = true_deaths * \
-            (1 - region_model.undetected_deaths_ratio_arr[_i + DAYS_BEFORE_DEATH])
-        deaths[_i + DAYS_BEFORE_DEATH] = reported_deaths
+        deaths[_i + DAYS_BEFORE_DEATH] = true_deaths
 
-    return dates, infections, hospitalizations, deaths
+    ########################################
+    # Compute reported deaths
+    ########################################
+    death_reporting_lag_arr_norm = DEATH_REPORTING_LAG_ARR / DEATH_REPORTING_LAG_ARR.sum()
+    assert abs(death_reporting_lag_arr_norm.sum() - 1) < 1e-9, death_reporting_lag_arr_norm
+    for i in range(region_model.N):
+        """
+        This section converts true deaths to reported deaths.
+
+        We first assume that a small minority of deaths are undetected, and remove those.
+        We then assume there is a reporting delay that is exponentially decreasing over time.
+            The probability density function of the delay is encoded in death_reporting_lag_arr.
+            In reality, reporting delays vary from region to region.
+        """
+        detected_deaths = deaths[i] * (1 - region_model.undetected_deaths_ratio_arr[i])
+        max_idx = min(len(death_reporting_lag_arr_norm), len(deaths) - i)
+        reported_deaths[i:i+max_idx] += \
+            (death_reporting_lag_arr_norm * detected_deaths)[:max_idx]
+
+    return dates, infections, hospitalizations, reported_deaths
 

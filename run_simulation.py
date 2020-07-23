@@ -157,8 +157,10 @@ def main(args):
             'MORTALITY_RATE' : 0.01,
             'REOPEN_DATE' : datetime.date(2020,5,20),
             'REOPEN_SHIFT_DAYS': 0,
-            'REOPEN_R_MULT' : 1.15,
-            'POST_REOPENING_R_DECAY' : 0.9975,
+            'REOPEN_R' : 1.2,
+            'REOPEN_INFLECTION' : 0.3,
+            'POST_REOPEN_EQUILIBRIUM_R' : 1.,
+            'FALL_R_MULTIPLIER' : 1.001,
         }
 
     if args.simulation_start_date:
