@@ -6,23 +6,23 @@ from fixed_params import *
 import utils
 
 
-def get_transition_sigmoid(inflection_day, rate_of_inflection, init_r_0, lockdown_r_0,
+def get_transition_sigmoid(inflection_idx, rate_of_inflection, low_value, high_value,
         check_values=True):
     """Returns a sigmoid function based on the specified parameters.
 
-    A sigmoid helps smooth the transition between init_r_0 and lockdown_r_0,
-        with the midpoint being inflection_day.
+    A sigmoid helps smooth the transition between low_value and high_value,
+        with the midpoint being inflection_idx.
     rate_of_inflection is typically a value between 0-1, with 1 being a very steep
         transition. We typically use 0.2-0.5 in our projections.
     """
     if check_values:
         assert 0 < rate_of_inflection <= 1, rate_of_inflection
-        assert 0 < init_r_0 <= 10, init_r_0
-        assert 0 <= lockdown_r_0 <= 10, lockdown_r_0
-    shift = inflection_day
+        assert 0 < low_value <= 10, low_value
+        assert 0 <= high_value <= 10, high_value
+    shift = inflection_idx
     a = rate_of_inflection
-    b = init_r_0 - lockdown_r_0
-    c = lockdown_r_0
+    b = low_value - high_value
+    c = high_value
     return utils.inv_sigmoid(shift, a, b, c)
 
 
@@ -170,8 +170,8 @@ class RegionModel:
         """Returns the immunity multiplier, a measure of the immunity in a region.
 
         The greater the immunity multiplier, the greater the effect of immunity.
-        The more populous a region, the greater the effect of immunity (since outbreaks
-            are usually localized)
+        We assume that the more populous a region, the greater the effect of immunity
+            (since outbreaks are often localized)
         Later on, use this multiplier by multiplying the transmission rate by:
             effective_r = R_t * (1-perc_population_infected_thus_far)**immunity_mult
         """
@@ -188,17 +188,11 @@ class RegionModel:
         elif self.subregion_str:
             immunity_mult = IMMUNITY_MULTIPLIER
         elif population < 20000000:
-            immunity_mult = utils.inv_sigmoid(
-                10000000, 0.0000003, IMMUNITY_MULTIPLIER-1, 1)(population)
+            immunity_mult = IMMUNITY_MULTIPLIER
         else:
-            immunity_mult = utils.inv_sigmoid(
-                20000000, 0.00000003, IMMUNITY_MULTIPLIER-1.25, 1.25)(population)
-
-        if self.country_str not in EARLY_IMPACTED_COUNTRIES + ['Brazil', 'Mexico']:
-            # These countries may not have comprehensive early testing, so the true prevalence
-            #   may be higher, hence we correct for that by increasing the immunity mult
-            # We also do not include Brazil/Mexico due to the already-high immunity_mult
-            immunity_mult *= 1.1
+            # immunity is between IMMUNITY_MULTIPLIER and 1
+            immunity_mult = get_transition_sigmoid(
+                50000000, 0.00000003, IMMUNITY_MULTIPLIER, 1, check_values=False)(population)
 
         return immunity_mult
 
@@ -258,8 +252,8 @@ class RegionModel:
 
             if day_idx > fall_start_idx:
                 fall_r_mult = max(0.9, min(
-                    1.1, self.fall_r_multiplier**(day_idx-fall_start_idx)))
-                assert 0.9 <= fall_r_mult <= 1.1, fall_r_mult
+                    1.15, self.fall_r_multiplier**(day_idx-fall_start_idx)))
+                assert 0.9 <= fall_r_mult <= 1.15, fall_r_mult
                 r_t *= fall_r_mult
 
             # Make sure R is stable
@@ -323,8 +317,9 @@ class RegionModel:
 
         You can customize this function to set a higher undetected ratio for
             different countries depending on their testing progress. For example,
-            many countries in Latin America and Africa do not have widespread testing,
-            hence the may have a higher undetected deaths ratio.
+            many developing countries not have widespread testing,
+            hence they may have a higher undetected deaths ratio. The true
+            undetected ratio may be even higher, but we leave that for a future study.
 
         For more info: https://covid19-projections.com/about/#undetected-deaths
         """
