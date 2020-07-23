@@ -17,6 +17,7 @@ If your system supports Python, you can generate your own simulations in under 5
   * [Changing Parameters](#changing-parameters)
   * [Using Your Own Parameters](#using-your-own-parameters)
 * [Parameters](#parameters)
+* [Updates](#updates)
 * [Questions?](#question-bug-feedback-suggestion)
 
 ## Introduction
@@ -243,13 +244,35 @@ This is the date we estimate the region to reopen. Read more about our reopening
 
 Even though some regions open on the same date, infections can begin increasing faster or slower than we'd normally expect. We use the `REOPEN_SHIFT_DAYS` to account for that. For example, a value of 7 means that we are shifting the `REOPEN_DATE` to be 7 days later, while a value of -7 means we are shifting it to be 7 days earlier. The default value is 0.
 
-#### `REOPEN_R_MULT`
+#### `REOPEN_R`
 
-This is the multiplier we apply to the `LOCKDOWN_R_0` to generate the reopening R_t value. We assume this value must be greater or equal to 1. For a typical region, we expect the R_t to increase by around 0-30%, so this multiplier is 1-1.3.
+(Added 2020-07-22) This is the maximum reopening R_t value. It takes roughly one month after the reopening to reach this value.
 
-#### `POST_REOPENING_R_DECAY`
+#### `REOPEN_INFLECTION`
 
-This is the daily multiplier we apply to the R_t approximately 15-30 days after reopening. After some time has passed following a reopening, we assume that the spread will decrease over time due to improvements in contact testing and greater awareness within the population. The default value is 0.9975. Read more about our post-reopening assumptions [here](https://covid19-projections.com/about/#post-reopening).
+(Added 2020-07-22) Similar to the `RATE_OF_INFLECTION` parameter froma bove, this value determines the rate of inflection from `LOCKDOWN_R_0` to `REOPEN_R`, as well as from `REOPEN_R` to `POST_REOPENING_EQUILIBRIUM_R` (see below). This value is usually between 0.15-0.35. The lower the value, the slower (and longer) the transitions. Hence, large countries usually have a lower value while US states typically have a value between 0.25-0.35. Read more about our post-reopening assumptions [here](https://covid19-projections.com/about/#post-reopening).
+
+#### `POST_REOPENING_EQUILIBRIUM_R`
+
+(Added 2020-07-19) This is the equilibrium R_t value after sufficient time has passed from the initial reopening. By default, this is set to 1, but can be adjusted. After accounting for immunity (which lowers R_t), the equilibrium R_t is likely between 0.85 and 1.
+
+#### `FALL_R_MULTIPLIER`
+
+(Added 2020-07-07) We are incorporating a potential for a [fall wave](https://covid19-projections.com/about/#fall-wave) as a result of school reopenings and the beginning of influenza season. This is the daily multiplier applied to the R value. As of July/August, because it is still too early to learn this value, this is sampled randomly from a triangular distribution with mode 1.001.
+
+## Updates
+
+2020-07-22
+- Remove `REOPEN_R_MULT` / `POST_REOPENING_R_DECAY` parameters and replace with `REOPEN_R` / `REOPEN_INFLECTION`
+
+2020-07-19
+- Add `POST_REOPENING_EQUILIBRIUM_R` parameter
+
+2020-07-07
+- Add `FALL_R_MULTIPLIER` parameter
+
+2020-06-22
+- Initial project release
 
 ## Question? Bug? Feedback? Suggestions?
 
