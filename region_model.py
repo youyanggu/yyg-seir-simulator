@@ -280,6 +280,10 @@ class RegionModel:
         assert 0.9 <= MORTALITY_MULTIPLIER <= 1.1, MORTALITY_MULTIPLIER
         assert 0 < self.MORTALITY_RATE < 0.2, self.MORTALITY_RATE
 
+        min_mortality_multiplier = MIN_MORTALITY_MULTIPLIER
+        if self.region_tuple in [('US', 'NY', ''), ('US', 'NY', 'New York City')]:
+            min_mortality_multiplier = 0.5 # NY's fatality rate remains high
+
         ifr_arr = []
         for idx in range(self.N):
             if self.country_str in EARLY_IMPACTED_COUNTRIES:
@@ -294,12 +298,12 @@ class RegionModel:
                 days_after_reopening = max(0, min(30, idx - (self.reopen_idx + DAYS_BEFORE_DEATH // 2)))
                 days_else = max(0, total_days_with_mult - days_after_reopening)
 
-                ifr_mult = max(MIN_MORTALITY_MULTIPLIER,
+                ifr_mult = max(min_mortality_multiplier,
                     MORTALITY_MULTIPLIER**days_else * MORTALITY_MULTIPLIER_US_REOPEN**days_after_reopening)
             else:
-                ifr_mult = max(MIN_MORTALITY_MULTIPLIER, MORTALITY_MULTIPLIER**total_days_with_mult)
-            assert 0 < MIN_MORTALITY_MULTIPLIER < 1, MIN_MORTALITY_MULTIPLIER
-            assert MIN_MORTALITY_MULTIPLIER <= ifr_mult <= 1, ifr_mult
+                ifr_mult = max(min_mortality_multiplier, MORTALITY_MULTIPLIER**total_days_with_mult)
+            assert 0 < min_mortality_multiplier < 1, min_mortality_multiplier
+            assert min_mortality_multiplier <= ifr_mult <= 1, ifr_mult
             ifr = max(MIN_IFR, self.MORTALITY_RATE * ifr_mult)
             ifr_arr.append(ifr)
 
@@ -328,7 +332,7 @@ class RegionModel:
 
         init_undetected_deaths_ratio = 1
         if self.country_str in EARLY_IMPACTED_COUNTRIES:
-            days_until_min_undetected = 45
+            days_until_min_undetected = 60
             min_undetected = 0.05
         else:
             # slower testing ramp-up for later-impacted countries
@@ -398,6 +402,10 @@ class RegionModel:
     @property
     def inflection_day_idx(self):
         return self.get_day_idx_from_date(self.INFLECTION_DAY)
+
+    @property
+    def region_tuple(self):
+        return (self.country_str, self.region_str, self.subregion_str)
 
     def __str__(self):
         return f'{self.country_str} | {self.region_str} | {self.subregion_str}'
