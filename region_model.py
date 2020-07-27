@@ -144,7 +144,15 @@ class RegionModel:
                 not np.isnan(self.POST_REOPEN_EQUILIBRIUM_R):
             return self.POST_REOPEN_EQUILIBRIUM_R
 
-        low, mode, high = 0.9, 1, 1.1 # mean is 1
+        if self.country_str == 'US':
+            if self.REOPEN_R > 1.2:
+                low, mode, high = 0.9, 1.05, 1.1 # mean is ~1.0166
+            elif self.REOPEN_R < 1:
+                low, mode, high = 0.85, 0.95, 1.05 # mean is 0.95
+            else:
+                low, mode, high = 0.9, 1, 1.1 # mean is 1
+        else:
+            low, mode, high = 0.85, 1, 1.15 # mean is 1
         post_reopen_equilibrium_r = np.random.triangular(low, mode, high)
 
         assert 0 < post_reopen_equilibrium_r < 10, post_reopen_equilibrium_r
@@ -281,8 +289,9 @@ class RegionModel:
         assert 0 < self.MORTALITY_RATE < 0.2, self.MORTALITY_RATE
 
         min_mortality_multiplier = MIN_MORTALITY_MULTIPLIER
-        if self.region_tuple in [('US', 'NY', ''), ('US', 'NY', 'New York City')]:
-            min_mortality_multiplier = 0.5 # NY's fatality rate remains high
+        if self.region_tuple in [('US', 'NY', ''), ('US', 'NY', 'New York City')] or \
+                self.region_tuple[:2] in [('US', 'NJ')]:
+            min_mortality_multiplier = 0.5 # NY/NJ's fatality rate remains high
 
         ifr_arr = []
         for idx in range(self.N):
