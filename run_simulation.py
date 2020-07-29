@@ -247,7 +247,7 @@ def main(args):
             daily_str = (f'{dates[i]} - '
                 f'New / total infections: {infections[i]:,.0f} / {infections_total[i]:,.0f} - '
                 f'{hospitalization_str}'
-                f'New / total deaths: {deaths[i]:,.0f} / {deaths_total[i]:,.0f} - '
+                f'New / total deaths: {deaths[i]:,.2f} / {deaths_total[i]:,.1f} - '
                 f'Mean R: {region_model.effective_r_arr[i]:.3f} - '
                 f'IFR: {region_model.ifr_arr[i]:.2%}')
             print(daily_str) # comment out to spare console buffer
