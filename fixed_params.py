@@ -59,5 +59,9 @@ DASH_REGIONS = ['Miami-Dade']
 NON_SEASONAL_COUNTRIES = ['Indonesia', 'Philippines', 'India', 'Malaysia', 'Nigeria',
     'Bolivia', 'Colombia', 'Cuba', 'Dominican Republic', 'Ecuador', 'Honduras', 'Panama', 'Peru', 'Brazil']
 SOUTHERN_HEMISPHERE_COUNTRIES = ['Argentina', 'Australia', 'Chile', 'South Africa']
+HIGH_INCOME_EUROPEAN_COUNTRIES = ['Iceland', 'Norway', 'Switzerland', 'United Kingdom'] + \
+    [c for c in EU_COUNTRIES if c not in ['Bulgaria']]
+HIGH_INCOME_COUNTRIES = ['US', 'Australia', 'Canada', 'Chile', 'Israel', 'Japan', 'South Korea',
+    'Kuwait', 'Panama', 'Saudi Arabia', 'United Arab Emirates'] + HIGH_INCOME_EUROPEAN_COUNTRIES
 EARLY_IMPACTED_COUNTRIES = ['US', 'Canada', 'China', 'Japan', 'South Korea', 'Israel', 'Iran'] + EUROPEAN_COUNTRIES
 COUNTRIES_WITH_LARGER_SECOND_WAVE = ['US', 'Australia', 'Israel', 'Philippines', 'Serbia']

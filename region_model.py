@@ -340,13 +340,21 @@ class RegionModel:
             return list(np.zeros(self.N))
 
         init_undetected_deaths_ratio = 1
-        if self.country_str in EARLY_IMPACTED_COUNTRIES:
+        if self.country_str in HIGH_INCOME_COUNTRIES:
             days_until_min_undetected = 60
             min_undetected = 0.05
-        else:
-            # slower testing ramp-up for later-impacted countries
+        elif self.country_str in ['Ecuador', 'India', 'Pakistan']:
             days_until_min_undetected = 120
-            min_undetected = 0.1
+            min_undetected = 0.5
+        elif self.country_str in ['Indonesia', 'Peru', 'South Africa']:
+            days_until_min_undetected = 120
+            min_undetected = 0.25
+        elif self.country_str in ['Brazil', 'Mexico', 'Russia']:
+            days_until_min_undetected = 120
+            min_undetected = 0.2
+        else:
+            days_until_min_undetected = 120
+            min_undetected = 0.15
 
         daily_step = (init_undetected_deaths_ratio - min_undetected) / days_until_min_undetected
         assert daily_step >= 0, daily_step
