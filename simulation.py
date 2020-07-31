@@ -16,7 +16,7 @@ def get_daily_imports(region_model, i):
     - beginning_days_flat is how many days at the beginning we maintain a constant import.
     - end_days_offset is the number of days from the end of the projections
         before we get 0 new imports.
-    - The number of daily imports is initially region_model.DAILY_IMPORTS, and
+    - The number of daily imports is initially region_model.daily_imports, and
         decreases linearly until day N-end_days_offset.
     """
 
@@ -36,13 +36,13 @@ def get_daily_imports(region_model, i):
     assert beginning_days_flat + end_days_offset <= N
     n_ = N - beginning_days_flat - end_days_offset + 1
 
-    daily_imports = region_model.DAILY_IMPORTS * \
+    daily_imports = region_model.daily_imports * \
         (1 - min(1, max(0, (i-beginning_days_flat+1)) / n_))
 
     if region_model.country_str not in ['China', 'South Korea', 'Australia'] and not \
             hasattr(region_model, 'end_days_offset'):
         # we want to maintain ~10 min daily imports a day
-        daily_imports = max(daily_imports, min(10, 0.1 * region_model.DAILY_IMPORTS))
+        daily_imports = max(daily_imports, min(10, 0.1 * region_model.daily_imports))
 
     return daily_imports
 
@@ -86,7 +86,7 @@ def run(region_model):
     for i in range(region_model.N):
         if i < INCUBATION_DAYS+len(infections_norm):
             # initialize infections
-            infections[i] = region_model.DAILY_IMPORTS
+            infections[i] = region_model.daily_imports
             effective_r_arr.append(region_model.R_0_ARR[i])
             continue
 

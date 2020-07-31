@@ -39,6 +39,7 @@ class RegionModel:
             projection_end_date,
             region_params=dict(),
             actual_deaths_smooth=None,
+            randomize_params=False,
             compute_hospitalizations=False):
         """
         Parameters
@@ -62,6 +63,10 @@ class RegionModel:
             Smoothed version of the deaths.
         compute_hospitalizations : bool, optional
             Whether to compute hospitalization estimates (default False)
+        randomize : bool, optional
+            Given a parameter for certain inputs such as daily_imports, generate a random
+                value from a uniform distribution with the value as the mean.
+                This is used to add more variance when training the model.
         """
 
         self.country_str = country_str
@@ -72,6 +77,7 @@ class RegionModel:
         self.projection_end_date = projection_end_date
         self.region_params = region_params
         self.actual_deaths_smooth = actual_deaths_smooth
+        self.randomize_params = randomize_params
         self.compute_hospitalizations = compute_hospitalizations
 
         self.country_holidays = None
@@ -107,6 +113,8 @@ class RegionModel:
         assert self.REOPEN_DATE > self.INFLECTION_DAY, \
             f'reopen date {self.REOPEN_DATE} must be after inflection day {self.INFLECTION_DAY}'
         self.params_tups = params_tups
+        self.set_lockdown_inflection_rate()
+        self.set_daily_imports()
         self.post_reopen_equilibrium_r = self.get_post_reopen_equilibrium_r()
         self.fall_r_multiplier = self.get_fall_r_multiplier()
         self.immunity_mult = self.get_immunity_mult()
@@ -230,13 +238,13 @@ class RegionModel:
 
         NUMERATOR_CONST = 6
         days_until_post_reopen = int(np.rint(NUMERATOR_CONST / self.REOPEN_INFLECTION))
-        assert 10 <= days_until_post_reopen <= 60, days_until_post_reopen
+        assert 10 <= days_until_post_reopen <= 80, days_until_post_reopen
         post_reopen_midpoint_idx = reopen_idx + days_until_post_reopen
         post_reopen_idx = reopen_idx + days_until_post_reopen * 2
         fall_start_idx = self.get_day_idx_from_date(FALL_START_DATE_NORTH) - 30
 
         sig_lockdown = get_transition_sigmoid(
-            self.inflection_day_idx, self.RATE_OF_INFLECTION, self.INITIAL_R_0, self.LOCKDOWN_R_0)
+            self.inflection_day_idx, self.lockdown_inflection_rate, self.INITIAL_R_0, self.LOCKDOWN_R_0)
         sig_fatigue = get_transition_sigmoid(
             fatigue_idx, 0.2, 0, self.LOCKDOWN_FATIGUE-1, check_values=False)
         sig_reopen = get_transition_sigmoid(
@@ -367,6 +375,20 @@ class RegionModel:
             undetected_deaths_ratio_arr.append(undetected_deaths_ratio)
 
         return undetected_deaths_ratio_arr
+
+    def set_lockdown_inflection_rate(self):
+        if self.randomize_params:
+            low, high = self.RATE_OF_INFLECTION * 0.75, self.RATE_OF_INFLECTION * 1.25
+            self.lockdown_inflection_rate = np.random.uniform(low, high)
+        else:
+            self.lockdown_inflection_rate = self.RATE_OF_INFLECTION
+
+    def set_daily_imports(self):
+        if self.randomize_params:
+            low, high = self.DAILY_IMPORTS * 0.5, self.DAILY_IMPORTS * 1.5
+            self.daily_imports = np.random.randint(low, high)
+        else:
+            self.daily_imports = self.DAILY_IMPORTS
 
     def get_day_idx_from_date(self, date):
         """Get the day index given a date.
