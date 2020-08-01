@@ -5,7 +5,7 @@ import numpy as np
 PROJECTION_END_DATE = datetime.date(2020,11,1)
 INCUBATION_DAYS = 2 # minimal incubation period of 2 days
 INFECTIOUS_DAYS_ARR = np.array([0.5,1,2,3,2,1,0.5]) # distribution of infections by days after INCUBATION_DAYS; mean serial interval of 5 days
-DEATHS_DAYS_ARR = np.array([1,2,3,4,4,3,3,3,2,2,2,1,1,1,1]) # distribution of deaths by days after exposure, centered around DAYS_BEFORE_DEATH
+DEATHS_DAYS_ARR = np.array([1,2,3,4,4,3,3,3,3,3,2,2,2,2,2]) # distribution of deaths by days after exposure, centered around DAYS_BEFORE_DEATH
 DEATH_REPORTING_LAG_ARR = np.array([0] + [15*0.85**i for i in range(30)]) # ~55% of deaths are reported within 5 days and ~80% within 10 days
 MORTALITY_MULTIPLIER = 0.995 # decreasing IFR over time: https://covid19-projections.com/about/#infection-fatality-rate-ifr
 MORTALITY_MULTIPLIER_US_REOPEN = 0.975 # faster rate of IFR decrease in the US after reopening
