@@ -6,21 +6,21 @@ from fixed_params import *
 import utils
 
 
-def get_transition_sigmoid(inflection_idx, rate_of_inflection, low_value, high_value,
+def get_transition_sigmoid(inflection_idx, inflection_rate, low_value, high_value,
         check_values=True):
     """Returns a sigmoid function based on the specified parameters.
 
     A sigmoid helps smooth the transition between low_value and high_value,
         with the midpoint being inflection_idx.
-    rate_of_inflection is typically a value between 0-1, with 1 being a very steep
+    inflection_rate is typically a value between 0-1, with 1 being a very steep
         transition. We typically use 0.2-0.5 in our projections.
     """
     if check_values:
-        assert 0 < rate_of_inflection <= 1, rate_of_inflection
+        assert 0 < inflection_rate <= 1, inflection_rate
         assert 0 < low_value <= 10, low_value
         assert 0 <= high_value <= 10, high_value
     shift = inflection_idx
-    a = rate_of_inflection
+    a = inflection_rate
     b = low_value - high_value
     c = high_value
     return utils.inv_sigmoid(shift, a, b, c)
@@ -113,10 +113,14 @@ class RegionModel:
         assert self.REOPEN_DATE > self.INFLECTION_DAY, \
             f'reopen date {self.REOPEN_DATE} must be after inflection day {self.INFLECTION_DAY}'
         self.params_tups = params_tups
-        self.set_lockdown_inflection_rate()
+
+        # Set parameters, if not provided/randomized
+        self.set_rate_of_inflection()
         self.set_daily_imports()
-        self.post_reopen_equilibrium_r = self.get_post_reopen_equilibrium_r()
-        self.fall_r_multiplier = self.get_fall_r_multiplier()
+        self.set_post_reopen_equilibrium_r()
+        self.set_fall_r_multiplier()
+
+        # Set additional values necessary to run simulations
         self.immunity_mult = self.get_immunity_mult()
         self.R_0_ARR = self.build_r_0_arr()
         self.ifr_arr = self.build_ifr_arr()
@@ -141,8 +145,24 @@ class RegionModel:
             return max(self.LOCKDOWN_R_0, self.REOPEN_R)
         return self.REOPEN_R
 
-    def get_post_reopen_equilibrium_r(self):
-        """Calculates the post-reopen equilibrium R.
+    def set_rate_of_inflection(self):
+        """Calculate and set the rate of inflection for transition from R0 to lockdown R."""
+        if self.randomize_params:
+            low, high = self.RATE_OF_INFLECTION * 0.75, self.RATE_OF_INFLECTION * 1.25
+            self.rate_of_inflection = np.random.uniform(low, high)
+        else:
+            self.rate_of_inflection = self.RATE_OF_INFLECTION
+
+    def set_daily_imports(self):
+        """Calculate and set daily imports to initialize a region's infections."""
+        if self.randomize_params:
+            low, high = self.DAILY_IMPORTS * 0.5, self.DAILY_IMPORTS * 1.5
+            self.daily_imports = np.random.randint(low, high)
+        else:
+            self.daily_imports = self.DAILY_IMPORTS
+
+    def set_post_reopen_equilibrium_r(self):
+        """Calculate and set the post-reopen equilibrium R.
 
         This is the R value after reopening effects have stablized and infection rates
             reach an equilibrium. This does not take into account immunity,
@@ -150,37 +170,38 @@ class RegionModel:
         """
         if hasattr(self, 'POST_REOPEN_EQUILIBRIUM_R') and \
                 not np.isnan(self.POST_REOPEN_EQUILIBRIUM_R):
-            return self.POST_REOPEN_EQUILIBRIUM_R
-
-        if self.country_str == 'US':
-            if self.REOPEN_R > 1.2:
-                low, mode, high = 0.9, 1.05, 1.1 # mean is ~1.0166
-            elif self.REOPEN_R < 1:
-                low, mode, high = 0.85, 0.95, 1.05 # mean is 0.95
-            else:
-                low, mode, high = 0.9, 1, 1.1 # mean is 1
+            post_reopen_equilibrium_r = self.POST_REOPEN_EQUILIBRIUM_R
         else:
-            low, mode, high = 0.85, 1, 1.15 # mean is 1
-        post_reopen_equilibrium_r = np.random.triangular(low, mode, high)
+            if self.country_str == 'US':
+                if self.REOPEN_R > 1.2:
+                    low, mode, high = 0.9, 1.05, 1.1 # mean is ~1.0166
+                elif self.REOPEN_R < 1:
+                    low, mode, high = 0.85, 0.95, 1.05 # mean is 0.95
+                else:
+                    low, mode, high = 0.9, 1, 1.1 # mean is 1
+            else:
+                low, mode, high = 0.85, 1, 1.15 # mean is 1
+            post_reopen_equilibrium_r = np.random.triangular(low, mode, high)
 
         assert 0 < post_reopen_equilibrium_r < 10, post_reopen_equilibrium_r
-        return post_reopen_equilibrium_r
+        self.post_reopen_equilibrium_r = post_reopen_equilibrium_r
 
-    def get_fall_r_multiplier(self):
-        """We currently assume a minor uptick in R in the fall for seasonal countries.
+    def set_fall_r_multiplier(self):
+        """Calculate and set the fall R multiplier.
 
+        We currently assume a minor uptick in R in the fall for seasonal countries.
         Full description at https://covid19-projections.com/about/#fall-wave
         """
 
         if hasattr(self, 'FALL_R_MULTIPLIER') and not np.isnan(self.FALL_R_MULTIPLIER):
-            return self.FALL_R_MULTIPLIER
+            fall_r_multiplier = self.FALL_R_MULTIPLIER
+        elif not self.has_us_seasonality():
+            fall_r_multiplier = 1
+        else:
+            low, mode, high = 0.998, 1.001, 1.004 # mean is 1.001
+            fall_r_multiplier = np.random.triangular(low, mode, high)
 
-        if not self.has_us_seasonality():
-            return 1
-        low, mode, high = 0.998, 1.001, 1.004 # mean is 1.001
-        fall_r_mult = np.random.triangular(low, mode, high)
-
-        return fall_r_mult
+        self.fall_r_multiplier = fall_r_multiplier
 
     def get_immunity_mult(self):
         """Returns the immunity multiplier, a measure of the immunity in a region.
@@ -244,7 +265,7 @@ class RegionModel:
         fall_start_idx = self.get_day_idx_from_date(FALL_START_DATE_NORTH) - 30
 
         sig_lockdown = get_transition_sigmoid(
-            self.inflection_day_idx, self.lockdown_inflection_rate, self.INITIAL_R_0, self.LOCKDOWN_R_0)
+            self.inflection_day_idx, self.rate_of_inflection, self.INITIAL_R_0, self.LOCKDOWN_R_0)
         sig_fatigue = get_transition_sigmoid(
             fatigue_idx, 0.2, 0, self.LOCKDOWN_FATIGUE-1, check_values=False)
         sig_reopen = get_transition_sigmoid(
@@ -375,20 +396,6 @@ class RegionModel:
             undetected_deaths_ratio_arr.append(undetected_deaths_ratio)
 
         return undetected_deaths_ratio_arr
-
-    def set_lockdown_inflection_rate(self):
-        if self.randomize_params:
-            low, high = self.RATE_OF_INFLECTION * 0.75, self.RATE_OF_INFLECTION * 1.25
-            self.lockdown_inflection_rate = np.random.uniform(low, high)
-        else:
-            self.lockdown_inflection_rate = self.RATE_OF_INFLECTION
-
-    def set_daily_imports(self):
-        if self.randomize_params:
-            low, high = self.DAILY_IMPORTS * 0.5, self.DAILY_IMPORTS * 1.5
-            self.daily_imports = np.random.randint(low, high)
-        else:
-            self.daily_imports = self.DAILY_IMPORTS
 
     def get_day_idx_from_date(self, date):
         """Get the day index given a date.
