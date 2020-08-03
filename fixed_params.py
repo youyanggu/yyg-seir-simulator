@@ -24,7 +24,8 @@ DAYS_WITH_IMPORTS = 100
 USE_UNDETECTED_DEATHS_RATIO = True
 DEFAULT_REOPEN_SHIFT_DAYS = 15
 DATE_PARAMS = ['INFLECTION_DAY', 'REOPEN_DATE']
-RANDOMIZED_PARAMS = ['POST_REOPEN_EQUILIBRIUM_R', 'FALL_R_MULTIPLIER']
+RANDOMIZED_PARAMS = ['POST_REOPEN_EQUILIBRIUM_R', 'FALL_R_MULTIPLIER'] # does not randomize if value exists
+POTENTIAL_RANDOMIZE_PARAMS = ['RATE_OF_INFLECTION', 'DAILY_IMPORTS'] # if randomize flag, then randomize even if value exists
 
 DATE_STR_FMT = '%Y-%m-%d'
 ADDL_US_HOLIDAYS = [datetime.date(2020,4,12), datetime.date(2020,5,10), datetime.date(2020,10,31)] # Eastern, Mother's Day, Halloween

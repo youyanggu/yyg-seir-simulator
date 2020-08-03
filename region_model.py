@@ -130,9 +130,9 @@ class RegionModel:
         """Returns all parameters as a tuple of (param_name, param_value) tuples."""
         all_param_tups = []
         for k,v in self.params_tups:
-            if k not in RANDOMIZED_PARAMS:
+            if k not in RANDOMIZED_PARAMS + POTENTIAL_RANDOMIZE_PARAMS:
                 all_param_tups.append((k, v))
-        for addl_param in RANDOMIZED_PARAMS:
+        for addl_param in RANDOMIZED_PARAMS + POTENTIAL_RANDOMIZE_PARAMS:
             all_param_tups.append((addl_param, getattr(self, addl_param.lower())))
         return tuple(all_param_tups)
 
@@ -319,8 +319,8 @@ class RegionModel:
 
         min_mortality_multiplier = MIN_MORTALITY_MULTIPLIER
         if self.region_tuple in [('US', 'NY', ''), ('US', 'NY', 'New York City')] or \
-                self.region_tuple[:2] in [('US', 'NJ')]:
-            min_mortality_multiplier = 0.5 # NY/NJ's fatality rate remains high
+                self.region_tuple[:2] in [('US', 'NJ'), ('US', 'MA'), ('US', 'NH')]:
+            min_mortality_multiplier = 0.5
 
         ifr_arr = []
         for idx in range(self.N):
