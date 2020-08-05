@@ -180,7 +180,10 @@ class RegionModel:
                 else:
                     low, mode, high = 0.9, 1, 1.1 # mean is 1
             else:
-                low, mode, high = 0.85, 1, 1.15 # mean is 1
+                if self.country_str in ['Brazil', 'Mexico']:
+                    low, mode, high = 1, 1.1, 1.2
+                else:
+                    low, mode, high = 0.85, 1, 1.15 # mean is 1
             post_reopen_equilibrium_r = np.random.triangular(low, mode, high)
 
         assert 0 < post_reopen_equilibrium_r < 10, post_reopen_equilibrium_r

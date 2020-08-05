@@ -186,7 +186,7 @@ def main(args):
             old_value = params_dict[param_name]
             new_value = old_value + convert_str_value_to_correct_type(
                 value_change, old_value, use_timedelta=True)
-            print(f'Increasing {param_name} from {old_value} to {new_value}')
+            print(f'Changing {param_name} from {old_value} to {new_value}')
             params_dict[param_name] = new_value
 
     region_model = RegionModel(country, region, subregion,
