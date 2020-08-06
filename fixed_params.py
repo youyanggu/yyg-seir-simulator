@@ -19,7 +19,6 @@ DAYS_UNTIL_RECOVERY = 15 # assume 15 days for mild cases
 IMMUNITY_MULTIPLIER = 0.5
 IMMUNITY_MULTIPLIER_US_SUBREGION = 0.3
 DAYS_UNTIL_LOCKDOWN_FATIGUE = 28
-MAX_POST_REOPEN_R = 1.2
 DAYS_WITH_IMPORTS = 100
 USE_UNDETECTED_DEATHS_RATIO = True
 DEFAULT_REOPEN_SHIFT_DAYS = 15
@@ -68,4 +67,3 @@ HIGH_INCOME_EUROPEAN_COUNTRIES = ['Iceland', 'Norway', 'Switzerland', 'United Ki
 HIGH_INCOME_COUNTRIES = ['US', 'Australia', 'Canada', 'Chile', 'Israel', 'Japan', 'South Korea',
     'Kuwait', 'Panama', 'Saudi Arabia', 'United Arab Emirates'] + HIGH_INCOME_EUROPEAN_COUNTRIES
 EARLY_IMPACTED_COUNTRIES = ['US', 'Canada', 'China', 'Japan', 'South Korea', 'Israel', 'Iran'] + EUROPEAN_COUNTRIES
-COUNTRIES_WITH_LARGER_SECOND_WAVE = ['US', 'Australia', 'Israel', 'Philippines', 'Serbia']
