@@ -113,6 +113,7 @@ class RegionModel:
         assert self.REOPEN_DATE > self.INFLECTION_DAY, \
             f'reopen date {self.REOPEN_DATE} must be after inflection day {self.INFLECTION_DAY}'
         self.params_tups = params_tups
+        assert set([i[0] for i in params_tups]).issubset(set(ALL_PARAMS)), 'Unknown params'
 
         # Set parameters, if not provided/randomized
         self.set_rate_of_inflection()
@@ -128,13 +129,12 @@ class RegionModel:
 
     def all_param_tups(self):
         """Returns all parameters as a tuple of (param_name, param_value) tuples."""
-        all_param_tups = []
-        for k,v in self.params_tups:
-            if k not in RANDOMIZED_PARAMS + POTENTIAL_RANDOMIZE_PARAMS:
-                all_param_tups.append((k, v))
+        all_param_dict = dict(self.params_tups)
         for addl_param in RANDOMIZED_PARAMS + POTENTIAL_RANDOMIZE_PARAMS:
-            all_param_tups.append((addl_param, getattr(self, addl_param.lower())))
-        return tuple(all_param_tups)
+            all_param_dict[addl_param] = getattr(self, addl_param.lower())
+
+        all_params = [(k, all_param_dict[k]) for k in ALL_PARAMS]
+        return tuple(all_params)
 
     def get_reopen_r(self):
         """Compute the R value after reopening.

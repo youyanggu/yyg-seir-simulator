@@ -31,6 +31,9 @@ DATE_STR_FMT = '%Y-%m-%d'
 ADDL_US_HOLIDAYS = [datetime.date(2020,4,12), datetime.date(2020,5,10), datetime.date(2020,10,31)] # Eastern, Mother's Day, Halloween
 FALL_START_DATE_NORTH = datetime.date(2020,9,22)
 
+ALL_PARAMS = ['INITIAL_R_0', 'LOCKDOWN_R_0', 'INFLECTION_DAY', 'RATE_OF_INFLECTION', 'LOCKDOWN_FATIGUE', 'DAILY_IMPORTS',
+    'MORTALITY_RATE', 'REOPEN_DATE', 'REOPEN_SHIFT_DAYS', 'REOPEN_R', 'REOPEN_INFLECTION', 'POST_REOPEN_EQUILIBRIUM_R', 'FALL_R_MULTIPLIER']
+
 #################
 # Countries
 #################
