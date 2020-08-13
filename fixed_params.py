@@ -15,7 +15,6 @@ DAYS_UNTIL_HOSPITALIZATION = 12 # Hospitalization parameters from many sources, 
 HOSPITALIZATION_RATE = 0.034 # based on CDC report as of 2020-05-20: https://www.cdc.gov/coronavirus/2019-ncov/hcp/planning-scenarios.html
 DAYS_IN_HOSPITAL = 11
 DAYS_BEFORE_DEATH = 22 # 22 after exposure, from https://doi.org/10.3390/jcm9020538
-DAYS_UNTIL_RECOVERY = 15 # assume 15 days for mild cases
 IMMUNITY_MULTIPLIER = 0.5
 IMMUNITY_MULTIPLIER_US_SUBREGION = 0.3
 DAYS_UNTIL_LOCKDOWN_FATIGUE = 28
