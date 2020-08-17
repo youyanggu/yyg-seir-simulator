@@ -174,7 +174,7 @@ class RegionModel:
         else:
             if self.country_str == 'US':
                 if self.REOPEN_R > 1.2:
-                    low, mode, high = 0.9, 1.05, 1.1 # mean is ~1.0166
+                    low, mode, high = 0.9, 1.04, 1.1 # mean is ~1.0133
                 elif self.REOPEN_R < 1:
                     low, mode, high = 0.85, 0.95, 1.05 # mean is 0.95
                 else:
@@ -322,7 +322,7 @@ class RegionModel:
 
         min_mortality_multiplier = MIN_MORTALITY_MULTIPLIER
         if self.region_tuple in [('US', 'NY', ''), ('US', 'NY', 'New York City')] or \
-                self.region_tuple[:2] in [('US', 'NJ'), ('US', 'MA'), ('US', 'NH')]:
+                self.region_tuple[:2] in [('US', 'MA')]:
             min_mortality_multiplier = 0.5
 
         ifr_arr = []
