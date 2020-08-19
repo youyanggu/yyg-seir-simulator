@@ -400,6 +400,16 @@ class RegionModel:
 
         return undetected_deaths_ratio_arr
 
+    def get_reporting_delay_distribution(self):
+        """Return a probabiliy distribution of the death reporting lag by day.
+
+        For example, if index 3 is 0.1, it means that 10% of deaths are reported
+            3 days after the date of death.
+        """
+        death_reporting_lag_arr = DEATH_REPORTING_LAG_ARR
+
+        return death_reporting_lag_arr / death_reporting_lag_arr.sum()
+
     def get_day_idx_from_date(self, date):
         """Get the day index given a date.
 

@@ -244,7 +244,7 @@ def main(args):
             hospitalization_str = ''
             if not skip_hospitalizations:
                 hospitalization_str = f'Hospital beds in use: {hospitalizations[i]:,.0f} - '
-            daily_str = (f'{dates[i]} - '
+            daily_str = (f'{i+1:<3} - {dates[i]} - '
                 f'New / total infections: {infections[i]:,.0f} / {infections_total[i]:,.0f} - '
                 f'{hospitalization_str}'
                 f'New / total deaths: {deaths[i]:,.2f} / {deaths_total[i]:,.1f} - '

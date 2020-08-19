@@ -135,7 +135,7 @@ def run(region_model):
     ########################################
     # Compute reported deaths
     ########################################
-    death_reporting_lag_arr_norm = DEATH_REPORTING_LAG_ARR / DEATH_REPORTING_LAG_ARR.sum()
+    death_reporting_lag_arr_norm = region_model.get_reporting_delay_distribution()
     assert abs(death_reporting_lag_arr_norm.sum() - 1) < 1e-9, death_reporting_lag_arr_norm
     for i in range(region_model.N):
         """
