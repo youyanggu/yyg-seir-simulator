@@ -321,7 +321,7 @@ class RegionModel:
         assert 0 < self.MORTALITY_RATE < 0.2, self.MORTALITY_RATE
 
         min_mortality_multiplier = MIN_MORTALITY_MULTIPLIER
-        if self.region_tuple in [('US', 'NY', ''), ('US', 'NY', 'New York City')] or \
+        if self.region_tuple in [] or \
                 self.region_tuple[:2] in [('US', 'MA')]:
             min_mortality_multiplier = 0.5
 
