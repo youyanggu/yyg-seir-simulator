@@ -201,7 +201,7 @@ class RegionModel:
         elif not self.has_us_seasonality():
             fall_r_multiplier = 1
         else:
-            low, mode, high = 0.996, 1.002, 1.008 # mean is 1.001
+            low, mode, high = 0.995, 1., 1.008 # mean is 1.001
             fall_r_multiplier = np.random.triangular(low, mode, high)
 
         self.fall_r_multiplier = fall_r_multiplier
