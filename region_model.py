@@ -173,9 +173,9 @@ class RegionModel:
             post_reopen_equilibrium_r = self.POST_REOPEN_EQUILIBRIUM_R
         else:
             if self.country_str == 'US':
-                if self.region_str in ['AZ', 'FL']:
+                if self.region_str in ['AZ', 'FL', 'OH']:
                     low, mode, high = 0.85, 0.95, 1.05
-                elif self.REOPEN_R < 1:
+                elif self.REOPEN_R < 1.1:
                     low, mode, high = 0.85, 0.95, 1.05 # mean is 0.95
                 else:
                     low, mode, high = 0.9, 1, 1.1 # mean is 1
@@ -201,7 +201,7 @@ class RegionModel:
         elif not self.has_us_seasonality():
             fall_r_multiplier = 1
         else:
-            low, mode, high = 0.995, 1., 1.008 # mean is 1.001
+            low, mode, high = 0.997, 1.001, 1.005 # mean is 1.001
             fall_r_multiplier = np.random.triangular(low, mode, high)
 
         self.fall_r_multiplier = fall_r_multiplier
@@ -292,8 +292,8 @@ class RegionModel:
 
             if day_idx > fall_start_idx:
                 fall_r_mult = max(0.9, min(
-                    1.2, self.fall_r_multiplier**(day_idx-fall_start_idx)))
-                assert 0.9 <= fall_r_mult <= 1.2, fall_r_mult
+                    1.5, self.fall_r_multiplier**(day_idx-fall_start_idx)))
+                assert 0.9 <= fall_r_mult <= 1.5, fall_r_mult
                 r_t *= fall_r_mult
 
             # Make sure R is stable
