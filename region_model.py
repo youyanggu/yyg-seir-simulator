@@ -173,7 +173,7 @@ class RegionModel:
             post_reopen_equilibrium_r = self.POST_REOPEN_EQUILIBRIUM_R
         else:
             if self.country_str == 'US':
-                if self.region_str in ['AZ', 'FL', 'OH']:
+                if self.region_str in ['AZ', 'FL', 'OH', 'HI']:
                     low, mode, high = 0.85, 0.95, 1.05
                 elif self.REOPEN_R < 1.1:
                     low, mode, high = 0.85, 0.95, 1.05 # mean is 0.95
@@ -182,6 +182,8 @@ class RegionModel:
             else:
                 if self.country_str in ['Brazil', 'Mexico']:
                     low, mode, high = 1, 1.1, 1.2
+                elif self.country_str in ['Australia']:
+                    low, mode, high = 0.8, 0.9, 1 # mean is 0.9
                 else:
                     low, mode, high = 0.85, 1, 1.15 # mean is 1
             post_reopen_equilibrium_r = np.random.triangular(low, mode, high)
