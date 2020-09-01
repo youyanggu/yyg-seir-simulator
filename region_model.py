@@ -141,7 +141,7 @@ class RegionModel:
 
         We cap the post-reopen R value to prevent exponential growth skewing estimates.
         """
-        if self.LOCKDOWN_R_0 < 1:
+        if self.LOCKDOWN_R_0 < 1 and self.country_str not in NO_LOCKDOWN_COUNTRIES:
             return max(self.LOCKDOWN_R_0, self.REOPEN_R)
         return self.REOPEN_R
 
