@@ -328,6 +328,8 @@ class RegionModel:
         if self.region_tuple in [] or \
                 self.region_tuple[:2] in [('US', 'MA')]:
             min_mortality_multiplier = 0.5
+        if self.country_str in HIGH_INCOME_EUROPEAN_COUNTRIES:
+            min_mortality_multiplier *= 0.75
 
         ifr_arr = []
         for idx in range(self.N):
