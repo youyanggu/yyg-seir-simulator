@@ -181,7 +181,7 @@ class RegionModel:
                     low, mode, high = 0.9, 1, 1.1 # mean is 1
             else:
                 if self.country_str in ['Brazil', 'Mexico']:
-                    low, mode, high = 1, 1.1, 1.2
+                    low, mode, high = 1, 1.15, 1.3
                 elif self.country_str in ['Australia']:
                     low, mode, high = 0.8, 0.9, 1 # mean is 0.9
                 elif self.country_str in HIGH_INCOME_COUNTRIES:
