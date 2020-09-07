@@ -173,7 +173,7 @@ class RegionModel:
             post_reopen_equilibrium_r = self.POST_REOPEN_EQUILIBRIUM_R
         else:
             if self.country_str == 'US':
-                if self.region_str in ['AZ', 'FL', 'GU', 'HI', 'NM', 'OH', 'WA']:
+                if self.region_str in ['AZ', 'FL', 'GU', 'HI', 'NM', 'OH', 'OR', 'WA']:
                     low, mode, high = 0.85, 0.95, 1.05
                 elif self.REOPEN_R < 1.1:
                     low, mode, high = 0.85, 0.95, 1.05 # mean is 0.95
