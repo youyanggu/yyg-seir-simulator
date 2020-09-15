@@ -201,6 +201,13 @@ class RegionModel:
                     low, mode, high = 0.85, 1, 1.15 # mean is 1
             post_reopen_equilibrium_r = np.random.triangular(low, mode, high)
 
+        if self.country_str in ['Egypt']:
+            # Use post_reopen_equilibrium_r
+            self.use_min_reopen_equilibrium_r = False
+        else:
+            # Use min(reopen_r, post_reopen_equilibrium_r)
+            self.use_min_reopen_equilibrium_r = True
+
         assert 0 < post_reopen_equilibrium_r < 10, post_reopen_equilibrium_r
         self.post_reopen_equilibrium_r = post_reopen_equilibrium_r
 
@@ -267,6 +274,10 @@ class RegionModel:
         """
 
         reopen_r = self.get_reopen_r()
+        if self.use_min_reopen_equilibrium_r:
+            post_reopen_r = min(reopen_r, self.post_reopen_equilibrium_r)
+        else:
+            post_reopen_r = self.post_reopen_equilibrium_r
         assert 0.5 <= self.LOCKDOWN_FATIGUE <= 1.5, self.LOCKDOWN_FATIGUE
 
         reopen_date_shift = self.REOPEN_DATE + \
@@ -288,12 +299,8 @@ class RegionModel:
             fatigue_idx, 0.2, 0, self.LOCKDOWN_FATIGUE-1, check_values=False)
         sig_reopen = get_transition_sigmoid(
             reopen_idx, self.REOPEN_INFLECTION, self.LOCKDOWN_R_0 * self.LOCKDOWN_FATIGUE, reopen_r)
-        if self.country_str == 'Egypt':
-            sig_post_reopen = get_transition_sigmoid(
-                post_reopen_idx, self.REOPEN_INFLECTION, reopen_r, self.post_reopen_equilibrium_r)
-        else:
-            sig_post_reopen = get_transition_sigmoid(
-                post_reopen_idx, self.REOPEN_INFLECTION, reopen_r, min(reopen_r, self.post_reopen_equilibrium_r))
+        sig_post_reopen = get_transition_sigmoid(
+            post_reopen_idx, self.REOPEN_INFLECTION, reopen_r, post_reopen_r)
 
         dates = utils.date_range(self.first_date, self.projection_end_date)
         assert len(dates) == self.N
