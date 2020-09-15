@@ -172,8 +172,13 @@ class RegionModel:
                 not np.isnan(self.POST_REOPEN_EQUILIBRIUM_R):
             post_reopen_equilibrium_r = self.POST_REOPEN_EQUILIBRIUM_R
         else:
+            # We can learn these values, but it's less computation to just set a range
             if self.country_str == 'US':
-                if self.region_str in ['AZ', 'FL', 'GU', 'HI', 'NM', 'OH', 'OR', 'TX', 'WA']:
+                if self.region_str in ['AZ', 'GU', 'HI', 'VI']:
+                    low, mode, high = 0.8, 0.9, 1.
+                elif self.region_str in ['FL', 'GA', 'MS', 'NM', 'NV', 'OR', 'TX', 'WA']:
+                    low, mode, high = 0.85, 0.95, 1.05
+                elif self.region_str == 'CA' and self.subregion_str:
                     low, mode, high = 0.85, 0.95, 1.05
                 elif self.REOPEN_R < 1.1:
                     low, mode, high = 0.85, 0.95, 1.05 # mean is 0.95
@@ -181,9 +186,15 @@ class RegionModel:
                     low, mode, high = 0.9, 1, 1.1 # mean is 1
             else:
                 if self.country_str in ['Brazil', 'Mexico']:
-                    low, mode, high = 1, 1.15, 1.3
+                    low, mode, high = 1, 1.125, 1.25
                 elif self.country_str in ['Australia']:
+                    low, mode, high = 0.7, 0.8, 0.9 # mean is 0.8
+                elif self.country_str in ['Japan', 'Poland', 'Serbia']:
                     low, mode, high = 0.8, 0.9, 1 # mean is 0.9
+                elif self.country_str in ['Algeria']:
+                    low, mode, high = 0.85, 0.95, 1.05 # mean is 0.95
+                elif self.country_str in ['Israel', 'United Arab Emirates']:
+                    low, mode, high = 0.85, 1, 1.15 # mean is 1
                 elif self.country_str in HIGH_INCOME_COUNTRIES:
                     low, mode, high = 0.85, 0.95, 1.15 # mean is ~0.983
                 else:
@@ -277,8 +288,12 @@ class RegionModel:
             fatigue_idx, 0.2, 0, self.LOCKDOWN_FATIGUE-1, check_values=False)
         sig_reopen = get_transition_sigmoid(
             reopen_idx, self.REOPEN_INFLECTION, self.LOCKDOWN_R_0 * self.LOCKDOWN_FATIGUE, reopen_r)
-        sig_post_reopen = get_transition_sigmoid(
-            post_reopen_idx, self.REOPEN_INFLECTION, reopen_r, min(reopen_r, self.post_reopen_equilibrium_r))
+        if self.country_str == 'Egypt':
+            sig_post_reopen = get_transition_sigmoid(
+                post_reopen_idx, self.REOPEN_INFLECTION, reopen_r, self.post_reopen_equilibrium_r)
+        else:
+            sig_post_reopen = get_transition_sigmoid(
+                post_reopen_idx, self.REOPEN_INFLECTION, reopen_r, min(reopen_r, self.post_reopen_equilibrium_r))
 
         dates = utils.date_range(self.first_date, self.projection_end_date)
         assert len(dates) == self.N
@@ -340,7 +355,10 @@ class RegionModel:
                 # slower rise in other countries, so we use 120 days
                 total_days_with_mult = max(0, idx - 120)
 
-            if self.country_str in EARLY_IMPACTED_COUNTRIES:
+            if self.country_str in ['Australia']:
+                # Opposite seaonsality in Australia -> use ifr mult of 1
+                ifr_mult = 1
+            elif self.country_str in EARLY_IMPACTED_COUNTRIES:
                 # Post-reopening has a greater reduction in the IFR
                 days_after_reopening = max(0, min(30, idx - (self.reopen_idx + DAYS_BEFORE_DEATH // 2)))
                 days_else = max(0, total_days_with_mult - days_after_reopening)
@@ -384,10 +402,10 @@ class RegionModel:
         elif self.country_str in ['Ecuador', 'India', 'Pakistan']:
             days_until_min_undetected = 120
             min_undetected = 0.5
-        elif self.country_str in ['Indonesia', 'Peru', 'South Africa']:
+        elif self.country_str in ['Indonesia', 'Peru', 'South Africa', 'Russia', 'Belarus']:
             days_until_min_undetected = 120
             min_undetected = 0.25
-        elif self.country_str in ['Brazil', 'Mexico', 'Russia']:
+        elif self.country_str in ['Brazil', 'Mexico']:
             days_until_min_undetected = 120
             min_undetected = 0.2
         else:
