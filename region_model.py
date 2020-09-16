@@ -171,14 +171,13 @@ class RegionModel:
         if hasattr(self, 'POST_REOPEN_EQUILIBRIUM_R') and \
                 not np.isnan(self.POST_REOPEN_EQUILIBRIUM_R):
             post_reopen_equilibrium_r = self.POST_REOPEN_EQUILIBRIUM_R
+            mode = None
         else:
             # We can learn these values, but it's less computation to just set a range
             if self.country_str == 'US':
-                if self.region_str in ['AZ', 'GU', 'HI', 'VI']:
+                if self.region_str in ['AZ', 'GU', 'HI', 'NV', 'VI']:
                     low, mode, high = 0.8, 0.9, 1.
-                elif self.region_str in ['FL', 'GA', 'MS', 'NM', 'NV', 'OR', 'TX', 'WA']:
-                    low, mode, high = 0.85, 0.95, 1.05
-                elif self.region_str == 'CA' and self.subregion_str:
+                elif self.region_str in ['CA', 'FL', 'GA', 'MS', 'NM', 'OR', 'TX', 'WA']:
                     low, mode, high = 0.85, 0.95, 1.05
                 elif self.REOPEN_R < 1.1:
                     low, mode, high = 0.85, 0.95, 1.05 # mean is 0.95
@@ -210,6 +209,7 @@ class RegionModel:
 
         assert 0 < post_reopen_equilibrium_r < 10, post_reopen_equilibrium_r
         self.post_reopen_equilibrium_r = post_reopen_equilibrium_r
+        self.post_reopen_mode = mode
 
     def set_fall_r_multiplier(self):
         """Calculate and set the fall R multiplier.
@@ -223,7 +223,12 @@ class RegionModel:
         elif not self.has_us_seasonality():
             fall_r_multiplier = 1
         else:
-            low, mode, high = 0.997, 1.001, 1.005 # mean is 1.001
+            if self.country_str == 'US' and self.post_reopen_mode and \
+                    self.post_reopen_mode < 1:
+                low, mode, high = 1, 1.003, 1.005 # mean is 1.003
+            else:
+                low, mode, high = 0.997, 1.001, 1.005 # mean is 1.001
+
             fall_r_multiplier = np.random.triangular(low, mode, high)
 
         self.fall_r_multiplier = fall_r_multiplier
