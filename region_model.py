@@ -177,7 +177,7 @@ class RegionModel:
             if self.country_str == 'US':
                 if self.region_str in ['AZ', 'GU', 'HI', 'NV', 'VI']:
                     low, mode, high = 0.8, 0.9, 1.
-                elif self.region_str in ['CA', 'FL', 'GA', 'MS', 'NM', 'OR', 'TX', 'WA']:
+                elif self.region_str in ['CA', 'GA', 'MS', 'NM', 'OR', 'TX', 'WA']:
                     low, mode, high = 0.85, 0.95, 1.05
                 elif self.REOPEN_R < 1.1:
                     low, mode, high = 0.85, 0.95, 1.05 # mean is 0.95
@@ -225,7 +225,7 @@ class RegionModel:
         else:
             if self.country_str == 'US' and self.post_reopen_mode and \
                     self.post_reopen_mode < 1:
-                low, mode, high = 1, 1.003, 1.005 # mean is 1.003
+                low, mode, high = 0.999, 1.002, 1.005 # mean is 1.002
             else:
                 low, mode, high = 0.997, 1.001, 1.005 # mean is 1.001
 
@@ -296,7 +296,13 @@ class RegionModel:
         assert 10 <= days_until_post_reopen <= 80, days_until_post_reopen
         post_reopen_midpoint_idx = reopen_idx + days_until_post_reopen
         post_reopen_idx = reopen_idx + days_until_post_reopen * 2
-        fall_start_idx = self.get_day_idx_from_date(FALL_START_DATE_NORTH) - 30
+
+        if self.country_str == 'US' and self.post_reopen_mode and \
+                self.post_reopen_mode < 1:
+            post_reopen_days_shift = 45
+        else:
+            post_reopen_days_shift = 30
+        fall_start_idx = self.get_day_idx_from_date(FALL_START_DATE_NORTH) - post_reopen_days_shift
 
         sig_lockdown = get_transition_sigmoid(
             self.inflection_day_idx, self.rate_of_inflection, self.INITIAL_R_0, self.LOCKDOWN_R_0)
@@ -377,6 +383,11 @@ class RegionModel:
 
                 ifr_mult = max(min_mortality_multiplier,
                     MORTALITY_MULTIPLIER**days_else * MORTALITY_MULTIPLIER_US_REOPEN**days_after_reopening)
+
+                fall_idx = self.get_day_idx_from_date(FALL_START_DATE_NORTH)
+                if idx > fall_idx:
+                    # Increase IFR starting in fall due to seasonality
+                    ifr_mult *= 1.000**(idx - fall_idx)
             else:
                 ifr_mult = max(min_mortality_multiplier, MORTALITY_MULTIPLIER**total_days_with_mult)
             assert 0 < min_mortality_multiplier < 1, min_mortality_multiplier
