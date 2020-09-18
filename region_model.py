@@ -299,7 +299,7 @@ class RegionModel:
 
         if self.country_str == 'US' and self.post_reopen_mode and \
                 self.post_reopen_mode < 1:
-            post_reopen_days_shift = 45
+            post_reopen_days_shift = 60 if self.post_reopen_mode <= 0.9 else 45
         else:
             post_reopen_days_shift = 30
         fall_start_idx = self.get_day_idx_from_date(FALL_START_DATE_NORTH) - post_reopen_days_shift
@@ -329,7 +329,7 @@ class RegionModel:
 
             if day_idx > fall_start_idx:
                 fall_r_mult = max(0.9, min(
-                    1.5, self.fall_r_multiplier**(day_idx-fall_start_idx)))
+                    1.4, self.fall_r_multiplier**(day_idx-fall_start_idx)))
                 assert 0.9 <= fall_r_mult <= 1.5, fall_r_mult
                 r_t *= fall_r_mult
 
@@ -387,7 +387,7 @@ class RegionModel:
                 fall_idx = self.get_day_idx_from_date(FALL_START_DATE_NORTH)
                 if idx > fall_idx:
                     # Increase IFR starting in fall due to seasonality
-                    ifr_mult *= 1.000**(idx - fall_idx)
+                    ifr_mult *= 1.001**(idx - fall_idx)
             else:
                 ifr_mult = max(min_mortality_multiplier, MORTALITY_MULTIPLIER**total_days_with_mult)
             assert 0 < min_mortality_multiplier < 1, min_mortality_multiplier
