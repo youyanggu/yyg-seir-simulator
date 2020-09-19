@@ -223,8 +223,8 @@ class RegionModel:
         elif not self.has_us_seasonality():
             fall_r_multiplier = 1
         else:
-            if self.country_str == 'US' and self.post_reopen_mode and \
-                    self.post_reopen_mode < 1:
+            if self.country_str == 'US' and (self.region_str in ['SC', 'WI'] or \
+                    (self.post_reopen_mode and self.post_reopen_mode < 1)):
                 low, mode, high = 0.999, 1.002, 1.005 # mean is 1.002
             else:
                 low, mode, high = 0.997, 1.001, 1.005 # mean is 1.001
@@ -297,8 +297,8 @@ class RegionModel:
         post_reopen_midpoint_idx = reopen_idx + days_until_post_reopen
         post_reopen_idx = reopen_idx + days_until_post_reopen * 2
 
-        if self.country_str == 'US' and self.post_reopen_mode and \
-                self.post_reopen_mode < 1:
+        if self.country_str in ['US'] + EUROPEAN_COUNTRIES and (self.region_str in ['SC', 'WI'] or \
+                (self.post_reopen_mode and self.post_reopen_mode < 1)):
             post_reopen_days_shift = 60 if self.post_reopen_mode <= 0.9 else 45
         else:
             post_reopen_days_shift = 30
