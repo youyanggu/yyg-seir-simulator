@@ -67,3 +67,4 @@ HIGH_INCOME_COUNTRIES = ['US', 'Australia', 'Canada', 'Chile', 'Israel', 'Japan'
     'Kuwait', 'Panama', 'Saudi Arabia', 'United Arab Emirates'] + HIGH_INCOME_EUROPEAN_COUNTRIES
 EARLY_IMPACTED_COUNTRIES = ['US', 'Canada', 'China', 'Japan', 'South Korea', 'Israel', 'Iran'] + EUROPEAN_COUNTRIES
 NO_LOCKDOWN_COUNTRIES = ['Sweden', 'Belarus']
+SECOND_LOCKDOWN_COUNTRIES = ['Australia', 'Israel']
