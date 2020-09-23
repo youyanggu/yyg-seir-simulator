@@ -177,8 +177,10 @@ class RegionModel:
             if self.country_str == 'US':
                 if self.region_str in ['AZ', 'GU', 'HI', 'NV', 'VI', 'VT']:
                     low, mode, high = 0.8, 0.9, 1.
-                elif self.region_str in ['CA', 'GA', 'MS', 'NM', 'OR', 'TX', 'WA']:
+                elif self.region_str in ['CA', 'GA', 'NM', 'OR', 'TX', 'WA']:
                     low, mode, high = 0.85, 0.95, 1.05
+                elif self.region_str in ['CT', 'NJ', 'NY']:
+                    low, mode, high = 0.95, 1.05, 1.15
                 elif self.REOPEN_R < 1.1:
                     low, mode, high = 0.85, 0.95, 1.05 # mean is 0.95
                 else:
@@ -227,9 +229,10 @@ class RegionModel:
         elif not self.has_us_seasonality():
             fall_r_multiplier = 1
         else:
-            if self.country_str == 'US' and self.region_str == 'CA' and self.subregion_str:
+            if self.country_str == 'US' and (self.region_str in ['VT'] or \
+                    (self.region_str == 'CA' and self.subregion_str)):
                 low, mode, high = 0.995, 1., 1.005
-            elif self.country_str == 'US' and (self.region_str in ['SC', 'WI'] or \
+            elif self.country_str == 'US' and (self.region_str in ['CT', 'NJ', 'NY', 'SC', 'WI'] or \
                     (self.post_reopen_mode and self.post_reopen_mode < 1)):
                 low, mode, high = 0.999, 1.002, 1.005 # mean is 1.002
             elif self.country_str not in ['Brazil', 'Iran', 'Mexico', 'Sweden'] and \
