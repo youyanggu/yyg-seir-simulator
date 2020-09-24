@@ -177,9 +177,9 @@ class RegionModel:
             if self.country_str == 'US':
                 if self.region_str in ['AZ', 'GU', 'HI', 'NV', 'VI', 'VT']:
                     low, mode, high = 0.8, 0.9, 1.
-                elif self.region_str in ['CA', 'GA', 'NM', 'OR', 'TX', 'WA']:
+                elif self.region_str in ['CA', 'OR', 'TX', 'WA']:
                     low, mode, high = 0.85, 0.95, 1.05
-                elif self.region_str in ['CT', 'NJ', 'NY']:
+                elif self.region_str in ['CT', 'NJ', 'NY', 'PA']:
                     low, mode, high = 0.95, 1.05, 1.15
                 elif self.REOPEN_R < 1.1:
                     low, mode, high = 0.85, 0.95, 1.05 # mean is 0.95
@@ -232,7 +232,7 @@ class RegionModel:
             if self.country_str == 'US' and (self.region_str in ['VT'] or \
                     (self.region_str == 'CA' and self.subregion_str)):
                 low, mode, high = 0.995, 1., 1.005
-            elif self.country_str == 'US' and (self.region_str in ['CT', 'NJ', 'NY', 'SC', 'WI'] or \
+            elif self.country_str == 'US' and (self.region_str in ['CT', 'NJ', 'NY', 'PA', 'SC', 'WI'] or \
                     (self.post_reopen_mode and self.post_reopen_mode < 1)):
                 low, mode, high = 0.999, 1.002, 1.005 # mean is 1.002
             elif self.country_str not in ['Brazil', 'Iran', 'Mexico', 'Sweden'] and \
@@ -385,8 +385,8 @@ class RegionModel:
                 # slower rise in other countries, so we use 120 days
                 total_days_with_mult = max(0, idx - 120)
 
-            if self.country_str in ['Australia']:
-                # Opposite seaonsality in Australia -> use ifr mult of 1
+            if self.country_str in ['Australia', 'South Africa']:
+                # Opposite seaonsality in Australia/South Africa -> use ifr mult of 1
                 ifr_mult = 1
             elif self.country_str in EARLY_IMPACTED_COUNTRIES:
                 # Post-reopening has a greater reduction in the IFR
@@ -434,10 +434,10 @@ class RegionModel:
         if self.country_str in HIGH_INCOME_COUNTRIES:
             days_until_min_undetected = 60
             min_undetected = 0.05
-        elif self.country_str in ['Ecuador', 'India', 'Pakistan']:
+        elif self.country_str in ['Ecuador', 'India', 'Pakistan', 'South Africa']:
             days_until_min_undetected = 120
             min_undetected = 0.5
-        elif self.country_str in ['Indonesia', 'Peru', 'South Africa', 'Russia', 'Belarus']:
+        elif self.country_str in ['Indonesia', 'Peru', 'Russia', 'Belarus']:
             days_until_min_undetected = 120
             min_undetected = 0.25
         elif self.country_str in ['Brazil', 'Mexico']:
