@@ -38,7 +38,7 @@ While this simulator may not be best suited to make projections (since it is not
 
 You need [Python 3](https://www.python.org/downloads/) and [NumPy](https://numpy.org/install/). That's it.
 
-*Note: This was built and tested on Python 3.8, so it's possible that an older Python 3.x version may not be compatible.*
+*Note: This was built and tested on Python 3.8.0 and NumPy 1.19.2. It's possible that an older/newer versions may not be compatible.*
 
 ## Setup
 
