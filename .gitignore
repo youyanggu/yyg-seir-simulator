@@ -1,2 +1,4 @@
-envp/
-__pycache__
+__pycache__/
+.python-version
+.DS_Store
+env/

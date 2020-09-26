@@ -175,9 +175,9 @@ class RegionModel:
         else:
             # We can learn these values, but it's less computation to just set a range
             if self.country_str == 'US':
-                if self.region_str in ['AZ', 'GU', 'HI', 'NV', 'VI', 'VT']:
+                if self.region_str in ['GU', 'HI', 'NV', 'VI', 'VT']:
                     low, mode, high = 0.8, 0.9, 1.
-                elif self.region_str in ['CA', 'OR', 'TX', 'WA']:
+                elif self.region_str in ['AZ', 'CA', 'OR', 'TX', 'WA']:
                     low, mode, high = 0.85, 0.95, 1.05
                 elif self.region_str in ['CT', 'NJ', 'NY', 'PA']:
                     low, mode, high = 0.95, 1.05, 1.15
@@ -194,9 +194,10 @@ class RegionModel:
                     low, mode, high = 0.8, 0.9, 1 # mean is 0.9
                 elif self.country_str in ['Algeria', 'Bangladesh', 'Bolivia', 'Pakistan', 'Saudi Arabia']:
                     low, mode, high = 0.85, 0.95, 1.05 # mean is 0.95
-                elif self.country_str in ['Austria', 'Belgium', 'Czechia', 'Denmark',
-                        'France', 'Hungary', 'Ireland', 'Italy', 'Netherlands', 'Portugal', 'Spain',
-                        'United Kingdom', 'Sweden', 'Switzerland',
+                elif self.country_str in ['Austria', 'Belgium', 'Estonia', 'Finland',
+                        'Hungary', 'Iceland', 'Ireland', 'Italy', 'Latvia', 'Lithuania', 'Netherlands',
+                        'Norway', 'Portugal', 'Slovakia', 'Slovenia', 'Spain',
+                        'United Kingdom', 'Switzerland',
                         'Ecuador', 'Indonesia', 'Iran',
                         'Kuwait', 'Panama', 'Russia', 'Turkey', 'United Arab Emirates']:
                     low, mode, high = 1, 1.1, 1.2 # mean is 1.1
@@ -206,7 +207,7 @@ class RegionModel:
                     low, mode, high = 0.85, 1, 1.15 # mean is 1
             post_reopen_equilibrium_r = np.random.triangular(low, mode, high)
 
-        if self.country_str in ['Egypt', 'Pakistan']:
+        if self.country_str in ['Egypt', 'Pakistan'] + EUROPEAN_COUNTRIES:
             # Use post_reopen_equilibrium_r (override reopen_r)
             self.use_min_reopen_equilibrium_r = False
         else:
