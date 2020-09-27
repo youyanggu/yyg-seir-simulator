@@ -177,7 +177,7 @@ class RegionModel:
             if self.country_str == 'US':
                 if self.region_str in ['GU', 'HI', 'NV', 'VI', 'VT']:
                     low, mode, high = 0.8, 0.9, 1.
-                elif self.region_str in ['AZ', 'CA', 'OR', 'TX', 'WA']:
+                elif self.region_str in ['AZ', 'CA', 'OR', 'WA']:
                     low, mode, high = 0.85, 0.95, 1.05
                 elif self.region_str in ['CT', 'NJ', 'NY', 'PA']:
                     low, mode, high = 0.95, 1.05, 1.15
@@ -234,7 +234,8 @@ class RegionModel:
                     (self.region_str == 'CA' and self.subregion_str)):
                 low, mode, high = 0.995, 1., 1.005
             elif self.country_str == 'US' and \
-                    (self.region_str in ['CT', 'NJ', 'NY', 'PA', 'SC', 'UT', 'WI'] or \
+                    (self.region_str in ['CT', 'NJ', 'NY', 'PA', 'AR', 'MN', 'MO', 'MT', 'ND', 'NE',
+                        'OK', 'SC', 'SD', 'UT', 'WI'] or \
                     (self.post_reopen_mode and self.post_reopen_mode < 1)):
                 low, mode, high = 0.999, 1.002, 1.005 # mean is 1.002
             elif self.country_str not in ['Brazil', 'Iran', 'Mexico', 'Sweden'] and \
@@ -311,7 +312,8 @@ class RegionModel:
         post_reopen_midpoint_idx = reopen_idx + days_until_post_reopen
         post_reopen_idx = reopen_idx + days_until_post_reopen * 2
 
-        if self.country_str in ['US'] + EUROPEAN_COUNTRIES and (self.region_str in ['SC', 'UT', 'WI'] or \
+        if self.country_str in ['US'] + EUROPEAN_COUNTRIES and \
+                (self.region_str in ['FL', 'AR', 'MN', 'MO', 'MT', 'ND', 'NE', 'OK', 'SC', 'SD', 'UT', 'WI'] or \
                 (self.post_reopen_mode and self.post_reopen_mode < 1)):
             post_reopen_days_shift = 60 if self.post_reopen_mode <= 0.9 else 45
         else:
