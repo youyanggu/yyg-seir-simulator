@@ -177,9 +177,9 @@ class RegionModel:
             if self.country_str == 'US':
                 if self.region_str in ['GU', 'HI', 'NV', 'VI', 'VT']:
                     low, mode, high = 0.8, 0.9, 1.
-                elif self.region_str in ['AZ', 'CA', 'OR', 'WA']:
+                elif self.region_str in ['AZ', 'OR', 'TX', 'WA']:
                     low, mode, high = 0.85, 0.95, 1.05
-                elif self.region_str in ['CT', 'NJ', 'NY', 'PA']:
+                elif self.region_str in ['CT', 'NJ', 'NY']:
                     low, mode, high = 0.95, 1.05, 1.15
                 elif self.REOPEN_R < 1.1:
                     low, mode, high = 0.85, 0.95, 1.05 # mean is 0.95
@@ -188,18 +188,18 @@ class RegionModel:
             else:
                 if self.country_str in ['Brazil', 'Mexico']:
                     low, mode, high = 1, 1.125, 1.25
-                elif self.country_str in SECOND_LOCKDOWN_COUNTRIES:
+                elif self.country_str in SECOND_LOCKDOWN_COUNTRIES + ['Serbia']:
                     low, mode, high = 0.7, 0.8, 0.9 # mean is 0.8
-                elif self.country_str in ['Japan', 'Croatia', 'Cyprus', 'Serbia']:
+                elif self.country_str in ['Algeria', 'Croatia', 'Cyprus', 'Dominican Republic', 'Japan']:
                     low, mode, high = 0.8, 0.9, 1 # mean is 0.9
-                elif self.country_str in ['Algeria', 'Bangladesh', 'Bolivia', 'Pakistan', 'Saudi Arabia']:
+                elif self.country_str in ['Bolivia', 'Pakistan', 'South Korea']:
                     low, mode, high = 0.85, 0.95, 1.05 # mean is 0.95
                 elif self.country_str in ['Austria', 'Belgium', 'Estonia', 'Finland',
                         'Hungary', 'Iceland', 'Ireland', 'Italy', 'Latvia', 'Lithuania', 'Netherlands',
                         'Norway', 'Portugal', 'Slovakia', 'Slovenia', 'Spain',
                         'United Kingdom', 'Switzerland',
                         'Ecuador', 'Indonesia', 'Iran',
-                        'Kuwait', 'Panama', 'Russia', 'Turkey', 'United Arab Emirates']:
+                        'Peru', 'Russia', 'Turkey', 'United Arab Emirates']:
                     low, mode, high = 1, 1.1, 1.2 # mean is 1.1
                 elif self.country_str in HIGH_INCOME_COUNTRIES:
                     low, mode, high = 0.85, 0.95, 1.15 # mean is ~0.983
@@ -207,7 +207,7 @@ class RegionModel:
                     low, mode, high = 0.85, 1, 1.15 # mean is 1
             post_reopen_equilibrium_r = np.random.triangular(low, mode, high)
 
-        if self.country_str in ['Egypt', 'Pakistan'] + EUROPEAN_COUNTRIES:
+        if self.country_str in ['Egypt', 'Malaysia', 'Pakistan'] + EUROPEAN_COUNTRIES:
             # Use post_reopen_equilibrium_r (override reopen_r)
             self.use_min_reopen_equilibrium_r = False
         else:
@@ -230,15 +230,18 @@ class RegionModel:
         elif not self.has_us_seasonality():
             fall_r_multiplier = 1
         else:
-            if self.country_str == 'US' and (self.region_str in ['VT'] or \
+            if self.country_str == 'US' and (self.region_str in ['NH', 'VI', 'VT'] or \
                     (self.region_str == 'CA' and self.subregion_str)):
                 low, mode, high = 0.995, 1., 1.005
             elif self.country_str == 'US' and \
-                    (self.region_str in ['CT', 'NJ', 'NY', 'PA', 'AR', 'MN', 'MO', 'MT', 'ND', 'NE',
-                        'OK', 'SC', 'SD', 'UT', 'WI'] or \
+                    (self.region_str in ['ALL', 'CT', 'NJ', 'NY',
+                        'AK', 'AR', 'IN', 'MN', 'MO', 'MT', 'NC', 'ND', 'NE',
+                        'OK', 'PA', 'SC', 'SD', 'UT', 'WI', 'WY'] or \
                     (self.post_reopen_mode and self.post_reopen_mode < 1)):
                 low, mode, high = 0.999, 1.002, 1.005 # mean is 1.002
-            elif self.country_str not in ['Brazil', 'Iran', 'Mexico', 'Sweden'] and \
+            elif self.country_str in ['Iran']:
+                low, mode, high = 0.999, 1.002, 1.005 # mean is 1.002
+            elif self.country_str not in ['Brazil', 'Mexico', 'Sweden'] and \
                     self.post_reopen_mode and self.post_reopen_mode > 1:
                 low, mode, high = 0.995, 1., 1.005 # mean is 1
             else:
@@ -312,10 +315,9 @@ class RegionModel:
         post_reopen_midpoint_idx = reopen_idx + days_until_post_reopen
         post_reopen_idx = reopen_idx + days_until_post_reopen * 2
 
-        if self.country_str in ['US'] + EUROPEAN_COUNTRIES and \
-                (self.region_str in ['FL', 'AR', 'MN', 'MO', 'MT', 'ND', 'NE', 'OK', 'SC', 'SD', 'UT', 'WI'] or \
-                (self.post_reopen_mode and self.post_reopen_mode < 1)):
-            post_reopen_days_shift = 60 if self.post_reopen_mode <= 0.9 else 45
+        if self.country_str == 'US' or (self.country_str in EUROPEAN_COUNTRIES and \
+                self.post_reopen_mode and self.post_reopen_mode < 1):
+            post_reopen_days_shift = 60 if (self.post_reopen_mode and self.post_reopen_mode <= 0.95) else 45
         else:
             post_reopen_days_shift = 30
         fall_start_idx = self.get_day_idx_from_date(FALL_START_DATE_NORTH) - post_reopen_days_shift
@@ -345,7 +347,7 @@ class RegionModel:
 
             if day_idx > fall_start_idx:
                 fall_r_mult = max(0.9, min(
-                    1.4, self.fall_r_multiplier**(day_idx-fall_start_idx)))
+                    1.35, self.fall_r_multiplier**(day_idx-fall_start_idx)))
                 assert 0.9 <= fall_r_mult <= 1.5, fall_r_mult
                 r_t *= fall_r_mult
 

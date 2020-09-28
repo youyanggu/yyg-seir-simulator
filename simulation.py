@@ -90,8 +90,10 @@ def run(region_model):
             effective_r_arr.append(region_model.R_0_ARR[i])
             continue
 
+        # assume 50% of population lose immunity after 6 months
+        infected_thus_far = infections[:max(0, i-180)].sum() * 0.5 + infections[max(0, i-180):i-1].sum()
         perc_population_infected_thus_far = \
-            min(1., infections[:i-1].sum() / region_model.population)
+            min(1., infected_thus_far / region_model.population)
         assert 0 <= perc_population_infected_thus_far <= 1, perc_population_infected_thus_far
 
         r_immunity_perc = (1. - perc_population_infected_thus_far)**region_model.immunity_mult
