@@ -206,7 +206,9 @@ You are also welcome to change the default parameters in [`fixed_params.py`](fix
 
 ## Parameters
 
-There are several parameters that we need to provide the simulator before it can run. We describe them below:
+There are several parameters that we need to provide the simulator before it can run. We describe them below.
+
+*Note: All reproduction number parameters are the R values before population immunity is applied. For example, if the `REOPEN_R` in New York is 1.2 and 20% of the population is infected. then the "true" Rt is 1.2 * 0.8 = 0.96.*
 
 #### `INITIAL_R_0`
 
