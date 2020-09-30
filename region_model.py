@@ -172,40 +172,6 @@ class RegionModel:
                 not np.isnan(self.POST_REOPEN_EQUILIBRIUM_R):
             post_reopen_equilibrium_r = self.POST_REOPEN_EQUILIBRIUM_R
             mode = None
-        else:
-            # We can learn these values, but it's less computation to just set a range
-            if self.country_str == 'US':
-                if self.region_str in ['GU', 'HI', 'NV', 'VI', 'VT']:
-                    low, mode, high = 0.8, 0.9, 1.
-                elif self.region_str in ['AZ', 'OR', 'TX', 'WA']:
-                    low, mode, high = 0.85, 0.95, 1.05
-                elif self.region_str in ['CT', 'NJ', 'NY']:
-                    low, mode, high = 0.95, 1.05, 1.15
-                elif self.REOPEN_R < 1.1:
-                    low, mode, high = 0.85, 0.95, 1.05 # mean is 0.95
-                else:
-                    low, mode, high = 0.9, 1, 1.1 # mean is 1
-            else:
-                if self.country_str in ['Brazil', 'Mexico']:
-                    low, mode, high = 1, 1.125, 1.25
-                elif self.country_str in SECOND_LOCKDOWN_COUNTRIES + ['Serbia']:
-                    low, mode, high = 0.7, 0.8, 0.9 # mean is 0.8
-                elif self.country_str in ['Algeria', 'Croatia', 'Cyprus', 'Dominican Republic', 'Japan']:
-                    low, mode, high = 0.8, 0.9, 1 # mean is 0.9
-                elif self.country_str in ['Bolivia', 'Pakistan', 'South Korea']:
-                    low, mode, high = 0.85, 0.95, 1.05 # mean is 0.95
-                elif self.country_str in ['Austria', 'Belgium', 'Estonia', 'Finland',
-                        'Hungary', 'Iceland', 'Ireland', 'Italy', 'Latvia', 'Lithuania', 'Netherlands',
-                        'Norway', 'Portugal', 'Slovakia', 'Slovenia', 'Spain',
-                        'United Kingdom', 'Switzerland',
-                        'Ecuador', 'Indonesia', 'Iran',
-                        'Peru', 'Russia', 'Turkey', 'United Arab Emirates']:
-                    low, mode, high = 1, 1.1, 1.2 # mean is 1.1
-                elif self.country_str in HIGH_INCOME_COUNTRIES:
-                    low, mode, high = 0.85, 0.95, 1.15 # mean is ~0.983
-                else:
-                    low, mode, high = 0.85, 1, 1.15 # mean is 1
-            post_reopen_equilibrium_r = np.random.triangular(low, mode, high)
 
         if self.country_str in ['Egypt', 'Malaysia', 'Pakistan'] + EUROPEAN_COUNTRIES:
             # Use post_reopen_equilibrium_r (override reopen_r)
@@ -227,27 +193,6 @@ class RegionModel:
 
         if hasattr(self, 'FALL_R_MULTIPLIER') and not np.isnan(self.FALL_R_MULTIPLIER):
             fall_r_multiplier = self.FALL_R_MULTIPLIER
-        elif not self.has_us_seasonality():
-            fall_r_multiplier = 1
-        else:
-            if self.country_str == 'US' and (self.region_str in ['NH', 'VI', 'VT'] or \
-                    (self.region_str == 'CA' and self.subregion_str)):
-                low, mode, high = 0.995, 1., 1.005
-            elif self.country_str == 'US' and \
-                    (self.region_str in ['ALL', 'CT', 'NJ', 'NY',
-                        'AK', 'AR', 'IN', 'MN', 'MO', 'MT', 'NC', 'ND', 'NE',
-                        'OK', 'PA', 'SC', 'SD', 'UT', 'WI', 'WY'] or \
-                    (self.post_reopen_mode and self.post_reopen_mode < 1)):
-                low, mode, high = 0.999, 1.002, 1.005 # mean is 1.002
-            elif self.country_str in ['Iran']:
-                low, mode, high = 0.999, 1.002, 1.005 # mean is 1.002
-            elif self.country_str not in ['Brazil', 'Mexico', 'Sweden'] and \
-                    self.post_reopen_mode and self.post_reopen_mode > 1:
-                low, mode, high = 0.995, 1., 1.005 # mean is 1
-            else:
-                low, mode, high = 0.997, 1.001, 1.005 # mean is 1.001
-
-            fall_r_multiplier = np.random.triangular(low, mode, high)
 
         self.fall_r_multiplier = fall_r_multiplier
 
