@@ -321,10 +321,15 @@ class RegionModel:
         assert 0 < self.MORTALITY_RATE < 0.2, self.MORTALITY_RATE
 
         min_mortality_multiplier = MIN_MORTALITY_MULTIPLIER
-        if self.region_tuple in [] or \
-                self.region_tuple[:2] in [('US', 'MA')]:
-            min_mortality_multiplier = 0.5
-        if self.country_str in HIGH_INCOME_EUROPEAN_COUNTRIES:
+        mortality_multiplier = MORTALITY_MULTIPLIER
+        region_tuple_to_mortality_mult = {
+            ('US', 'CT') : (0.15, 0.99),
+            ('US', 'MA') : (0.5, mortality_multiplier),
+        }
+        if self.region_tuple[:2] in region_tuple_to_mortality_mult:
+            min_mortality_multiplier, mortality_multiplier = \
+                region_tuple_to_mortality_mult[self.region_tuple[:2]]
+        elif self.country_str in HIGH_INCOME_EUROPEAN_COUNTRIES:
             min_mortality_multiplier *= 0.75
 
         ifr_arr = []
@@ -345,14 +350,15 @@ class RegionModel:
                 days_else = max(0, total_days_with_mult - days_after_reopening)
 
                 ifr_mult = max(min_mortality_multiplier,
-                    MORTALITY_MULTIPLIER**days_else * MORTALITY_MULTIPLIER_US_REOPEN**days_after_reopening)
+                    mortality_multiplier**days_else * MORTALITY_MULTIPLIER_US_REOPEN**days_after_reopening)
 
-                fall_idx = self.get_day_idx_from_date(FALL_START_DATE_NORTH)
-                if idx > fall_idx:
+                post_reopen_days_shift = 30 if self.country_str == 'US' else 0
+                fall_start_idx = self.get_day_idx_from_date(FALL_START_DATE_NORTH) - post_reopen_days_shift
+                if idx > fall_start_idx:
                     # Increase IFR starting in fall due to seasonality
-                    ifr_mult *= 1.002**(idx - fall_idx)
+                    ifr_mult *= 1.002**(idx - fall_start_idx)
             else:
-                ifr_mult = max(min_mortality_multiplier, MORTALITY_MULTIPLIER**total_days_with_mult)
+                ifr_mult = max(min_mortality_multiplier, mortality_multiplier**total_days_with_mult)
             assert 0 < min_mortality_multiplier < 1, min_mortality_multiplier
             assert min_mortality_multiplier <= ifr_mult <= 1, ifr_mult
             ifr = max(MIN_IFR, self.MORTALITY_RATE * ifr_mult)
@@ -388,7 +394,7 @@ class RegionModel:
         elif self.country_str in ['Ecuador', 'India', 'Pakistan', 'South Africa']:
             days_until_min_undetected = 120
             min_undetected = 0.5
-        elif self.country_str in ['Indonesia', 'Peru', 'Russia', 'Belarus']:
+        elif self.country_str in ['Bolivia', 'Indonesia', 'Peru', 'Russia', 'Belarus']:
             days_until_min_undetected = 120
             min_undetected = 0.25
         elif self.country_str in ['Brazil', 'Mexico']:
