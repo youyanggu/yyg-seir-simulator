@@ -173,7 +173,8 @@ class RegionModel:
             post_reopen_equilibrium_r = self.POST_REOPEN_EQUILIBRIUM_R
             mode = None
 
-        if self.country_str in ['Egypt', 'Malaysia', 'Pakistan'] + EUROPEAN_COUNTRIES:
+        if self.country_str in ['Egypt', 'Malaysia', 'Pakistan'] + EUROPEAN_COUNTRIES or \
+                (self.country_str == 'US' and self.region_str in ['WI']):
             # Use post_reopen_equilibrium_r (override reopen_r)
             self.use_min_reopen_equilibrium_r = False
         else:
@@ -325,6 +326,8 @@ class RegionModel:
         region_tuple_to_mortality_mult = {
             ('US', 'CT') : (0.15, 0.99),
             ('US', 'MA') : (0.5, mortality_multiplier),
+            ('US', 'ND') : (0.6, mortality_multiplier),
+            ('US', 'RI') : (0.4, mortality_multiplier),
         }
         if self.region_tuple[:2] in region_tuple_to_mortality_mult:
             min_mortality_multiplier, mortality_multiplier = \
