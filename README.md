@@ -18,7 +18,8 @@ If your system supports Python, you can generate your own simulations in under 5
   * [Using Your Own Parameters](#using-your-own-parameters)
 * [Parameters](#parameters)
 * [Updates](#updates)
-* [Questions?](#question-bug-feedback-suggestion)
+* [Question?](#question-bug-feedback-suggestion)
+* [Other Repositories](#other-repositories)
 
 ## Introduction
 
@@ -279,3 +280,12 @@ Even though some regions open on the same date, infections can begin increasing 
 ## Question? Bug? Feedback? Suggestions?
 
 We welcome questions, bug reports, feedback and suggestions. You can find a lot of information on [covid19-projections.com](https://covid19-projections.com/about/). But feel free to open an [issue ticket](https://github.com/youyanggu/yyg-c19pro-model-public/issues) if your question was not answered.
+
+## Other Repositories
+
+- [Main COVID-19 Repository](https://github.com/youyanggu/covid19_projections)
+- [Infections Estimates](https://github.com/youyanggu/covid19-infection-estimates-latest)
+- [Historical CDC Vaccination Data](https://github.com/youyanggu/covid19-cdc-vaccination-data)
+- [COVID-19 datasets](https://github.com/youyanggu/covid19-datasets)
+- [Model Evaluations](https://github.com/youyanggu/covid19-forecast-hub-evaluation)
+
